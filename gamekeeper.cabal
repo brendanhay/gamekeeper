@@ -15,11 +15,11 @@ extra-source-files: README.md
 
 executable gamekeeper
   build-depends:    base >= 3 && < 5
-                  , transformers
+                  , mtl
                   , ghc-prim
+                  , network
                   , conduit
                   , http-conduit
-                  , utf8-string
                   , bytestring
                   , attoparsec
                   , aeson
