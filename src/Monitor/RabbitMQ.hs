@@ -6,8 +6,10 @@ module Monitor.RabbitMQ
     ) where
 
 import GHC.Generics (Generic)
+import Data.Maybe (fromJust)
 import Data.Aeson (FromJSON, ToJSON, decode)
-import Monitor.Http (request)
+import Monitor.Uri (Uri, getEnvUri)
+import Monitor.Http (getBody)
 
 data Overview = Overview
     { management_version :: String
@@ -19,5 +21,6 @@ instance ToJSON Overview
 
 overview :: IO (Maybe Overview)
 overview = do
-    body <- request "localhost:55672" "guest" "guest"
+    uri <- getEnvUri "RABBITMQ_MGMT_URI"
+    body <- getBody uri "/api/overview"
     return (decode body :: Maybe Overview)
