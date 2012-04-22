@@ -5,5 +5,5 @@ import Monitor.RabbitMQ (overview)
 
 main :: IO ()
 main = do
-     res <- overview
-     print $ fromJust res
+    res <- overview
+    print $ fromJust res
