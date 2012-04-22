@@ -21,6 +21,7 @@ data Uri = Uri
     , uriPath :: String
     }
 
+-- XXX: Hack used while developing
 instance Show Uri where
     show uri = "http://" ++ subRegex (mkRegex "^.+//") (uriPath uri) (credentials uri ++ "@")
 
