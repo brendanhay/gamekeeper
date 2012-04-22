@@ -7,31 +7,40 @@ module Monitor.Uri
     ) where
 
 import Control.Monad.IO.Class (liftIO)
+import System.Environment (getEnv)
+import Network.HTTP.Types (Ascii)
+import Network.URI hiding (scheme, uriPath)
 import Data.List (delete, takeWhile)
 import Data.Maybe (fromJust)
-import Data.ByteString.UTF8
-import System.Environment (getEnv)
-import Network.URI hiding (scheme)
+import Text.Regex
+
+import qualified Data.ByteString.Char8 as S
 
 data Uri = Uri
-    { uriUser :: ByteString
-    , uriPass :: ByteString
-    , uriHost :: String
-    } deriving (Show)
+    { uriUser :: Ascii
+    , uriPass :: Ascii
+    , uriPath :: String
+    }
 
-addPath :: String -> String -> String
-addPath left right = concat [left, "/", right]
+instance Show Uri where
+    show uri = "http://" ++ subRegex (mkRegex "^.+//") (uriPath uri) (credentials uri ++ "@")
 
 getEnvUri :: String -> IO Uri
 getEnvUri env = do
     var <- getEnv env
     return $ conv $ fromJust $ parseURI var
 
+addPath :: Uri -> String -> Uri
+addPath (Uri x y z) path = Uri x y $ concat [z, path]
+
+credentials :: Uri -> String
+credentials (Uri x y _) = S.unpack $ S.concat [x, S.cons ':' y]
+
 conv :: URI -> Uri
 conv var = Uri
-    { uriUser = fromString $ user var
-    , uriPass = fromString $ pass var
-    , uriHost = host var
+    { uriUser = S.pack $ user var
+    , uriPass = S.pack $ pass var
+    , uriPath = host var
     }
 
 auth :: URI -> String

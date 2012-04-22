@@ -8,7 +8,7 @@ module Monitor.RabbitMQ
 import GHC.Generics (Generic)
 import Data.Maybe (fromJust)
 import Data.Aeson (FromJSON, ToJSON, decode)
-import Monitor.Uri (Uri, getEnvUri)
+import Monitor.Uri (Uri, getEnvUri, addPath)
 import Monitor.Http (getBody)
 
 data Overview = Overview
@@ -22,5 +22,5 @@ instance ToJSON Overview
 overview :: IO (Maybe Overview)
 overview = do
     uri <- getEnvUri "RABBITMQ_MGMT_URI"
-    body <- getBody uri "/api/overview"
+    body <- getBody $ addPath uri "/api/overview"
     return (decode body :: Maybe Overview)

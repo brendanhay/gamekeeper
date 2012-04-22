@@ -20,8 +20,9 @@ executable gamekeeper
                   , transformers
                   , network
                   , conduit
+                  , http-types
                   , http-conduit
-                  , utf8-string
+                  , regex-compat
                   , bytestring
                   , attoparsec
                   , aeson
