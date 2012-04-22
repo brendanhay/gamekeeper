@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Monitor.Uri
-    ( Uri(..)
-    , getEnvUri
-    , addPath
-    ) where
+module Monitor.Uri (
+    Uri(..)
+  , getEnvUri
+  , addPath
+  ) where
 
 import System.Environment (getEnv)
 import Network.HTTP.Types (Ascii)
