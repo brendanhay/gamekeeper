@@ -25,6 +25,9 @@ data Uri = Uri
 instance Show Uri where
     show uri = "http://" ++ subRegex (mkRegex "^.+//") (uriPath uri) (credentials uri ++ "@")
 
+credentials :: Uri -> String
+credentials (Uri x y _) = S.unpack $ S.concat [x, S.cons ':' y]
+
 getEnvUri :: String -> IO Uri
 getEnvUri env = do
     var <- getEnv env
@@ -32,9 +35,6 @@ getEnvUri env = do
 
 addPath :: Uri -> String -> Uri
 addPath (Uri x y z) path = Uri x y $ concat [z, path]
-
-credentials :: Uri -> String
-credentials (Uri x y _) = S.unpack $ S.concat [x, S.cons ':' y]
 
 conv :: URI -> Uri
 conv var = Uri
