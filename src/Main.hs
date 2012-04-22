@@ -1,8 +1,9 @@
 module Main where
 
+import Data.Maybe (fromJust)
 import Monitor.RabbitMQ (overview)
 
 main :: IO ()
 main = do
-    o <- overview
-    print o
+     res <- overview
+     print $ fromJust res

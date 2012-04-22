@@ -6,7 +6,6 @@ module Monitor.Uri
     , addPath
     ) where
 
-import Control.Monad.IO.Class (liftIO)
 import System.Environment (getEnv)
 import Network.HTTP.Types (Ascii)
 import Network.URI hiding (scheme, uriPath)
