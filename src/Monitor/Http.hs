@@ -1,6 +1,6 @@
-module Monitor.Http
-    ( getBody
-    ) where
+module Monitor.Http (
+    getBody
+  ) where
 
 import Network.HTTP.Conduit
 import Data.Conduit

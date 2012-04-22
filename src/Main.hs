@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Maybe (fromJust)
+import Data.Maybe       (fromJust)
 import Monitor.RabbitMQ (overview)
 
 main :: IO ()
