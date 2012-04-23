@@ -21,9 +21,6 @@ data Uri = Uri
     , uriPath :: String
     } deriving (Show)
 
-credentials :: Uri -> String
-credentials (Uri x y _) = S.unpack $ S.concat [x, S.cons ':' y]
-
 getEnvUri :: String -> IO Uri
 getEnvUri env = do
     var <- getEnv env
