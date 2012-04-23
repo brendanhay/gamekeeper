@@ -30,11 +30,7 @@ addPath :: Uri -> String -> Uri
 addPath (Uri x y z) path = Uri x y $ concat [z, path]
 
 conv :: URI -> Uri
-conv var = Uri
-    { uriUser = S.pack $ user var
-    , uriPass = S.pack $ pass var
-    , uriPath = host var
-    }
+conv var = Uri (S.pack $ user var) (S.pack $ pass var) (host var)
 
 auth :: URI -> String
 auth = uriUserInfo . fromJust . uriAuthority
