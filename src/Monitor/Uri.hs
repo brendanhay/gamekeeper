@@ -9,8 +9,8 @@ module Monitor.Uri (
 import System.Environment (getEnv)
 import Network.HTTP.Types (Ascii)
 import Network.URI hiding (scheme, uriPath)
-import Data.List (delete, takeWhile)
-import Data.Maybe (fromJust)
+import Data.List          (delete, takeWhile)
+import Data.Maybe         (fromJust)
 import Text.Regex
 
 import qualified Data.ByteString.Char8 as S
@@ -19,11 +19,7 @@ data Uri = Uri
     { uriUser :: Ascii
     , uriPass :: Ascii
     , uriPath :: String
-    }
-
--- XXX: Hack used while developing
-instance Show Uri where
-    show uri = "http://" ++ subRegex (mkRegex "^.+//") (uriPath uri) (credentials uri ++ "@")
+    } deriving (Show)
 
 credentials :: Uri -> String
 credentials (Uri x y _) = S.unpack $ S.concat [x, S.cons ':' y]

@@ -14,6 +14,9 @@ cabal-version:      >= 1.10
 extra-source-files: README.md
 
 executable gamekeeper
+  default-language: Haskell2010
+  hs-source-dirs:   src
+  main-is:          Main.hs
   build-depends:    base >= 3 && < 5
                   , mtl
                   , ghc-prim
@@ -26,7 +29,3 @@ executable gamekeeper
                   , bytestring
                   , attoparsec
                   , aeson
-
-  default-language: Haskell2010
-  hs-source-dirs:   src
-  main-is:          Main.hs
