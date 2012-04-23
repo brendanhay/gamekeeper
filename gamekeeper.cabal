@@ -1,7 +1,7 @@
 name:               gamekeeper
 version:            0.1
-synopsis:           Graphite/statsd polling for the RabbitMQ Management Interface
-description:        Graphite/statsd polling for the RabbitMQ Management Interface
+synopsis:           Graphite/statsd statistics for RabbitMQ
+description:        Retrieve statistics from the HTTP RabbitMQ Management Interface and deliver them to statsd via udp
 license-file:       LICENSE
 
 author:             Brendan Hay
