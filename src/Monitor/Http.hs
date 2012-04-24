@@ -6,7 +6,6 @@ import Network.HTTP.Conduit
 import Data.Maybe  (fromJust)
 import Monitor.Uri (Uri(..))
 
-import qualified Data.ByteString.Char8 as S
 import qualified Data.ByteString.Lazy as L
 
 getBody :: Uri -> IO L.ByteString

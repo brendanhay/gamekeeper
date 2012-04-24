@@ -18,12 +18,11 @@ executable gamekeeper
   hs-source-dirs:   src
   main-is:          Main.hs
   build-depends:    base >= 3 && < 5
-                  , mtl
+--                  , mtl
                   , ghc-prim
-                  , transformers
                   , regex-compat
-                  , conduit
                   , http-conduit
+                  , utf8-string
                   , bytestring
                   , attoparsec
                   , aeson

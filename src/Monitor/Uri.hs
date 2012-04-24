@@ -1,7 +1,7 @@
 module Monitor.Uri (
     Uri(..)
   , getEnvUri
-  , join
+  , joinUri
   ) where
 
 import System.Environment    (getEnv)
@@ -15,8 +15,8 @@ getEnvUri env = do
     var <- getEnv env
     return $ conv $ matchRegex uri var
 
-join :: Uri -> String -> Uri
-join (Uri user pass path) path' = Uri user pass (path ++ path')
+joinUri :: Uri -> String -> Uri
+joinUri (Uri user pass path) path' = Uri user pass (path ++ path')
 
 uri :: Regex
 uri = mkRegex "^http://(.+):(.+)@(.+)$"

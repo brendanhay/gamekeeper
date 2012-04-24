@@ -5,43 +5,27 @@ module Monitor.RabbitMQ (
     overview
   ) where
 
-import GHC.Generics (Generic)
-import Data.Maybe   (fromJust)
-import Data.Aeson   (FromJSON, ToJSON, decode)
-import Monitor.Uri  (Uri, getEnvUri, join)
-import Monitor.Http (getBody)
-
-data Details = Details
-    { rate       :: Float
-    , interval   :: Integer
-    , last_event :: Integer
-    } deriving (Show, Generic)
-
-instance FromJSON Details
-instance ToJSON Details
-
-data MessageStats = MessageStats
-    { confirm         :: Integer
-    , confirm_details :: Details
-    } deriving (Show, Generic)
-
-instance FromJSON MessageStats
-instance ToJSON MessageStats
-
-data Overview = Overview
-    { management_version :: String
-    , statistics_level   :: String
-    , message_stats      :: MessageStats
-    } deriving (Show, Generic)
-
-instance FromJSON Overview
-instance ToJSON Overview
+import GHC.Generics         (Generic)
+import Data.List            (concat, intersperse)
+import Data.Data
+import Data.ByteString.Lazy (ByteString)
+import Data.Aeson           (FromJSON, ToJSON, decode)
+import Monitor.Uri          (Uri, getEnvUri, joinUri)
+import Monitor.Http         (getBody)
+import Monitor.RabbitMQ.Overview
 
 overview :: IO (Maybe Overview)
 overview = do
-    uri <- getUri
-    body <- getBody $ join uri "/api/overview"
+    body <- raw $ "/api/overview?columns=" ++ (columns (undefined :: Overview))
     return (decode body :: Maybe Overview)
 
-getUri :: IO Uri
-getUri = getEnvUri "RABBITMQ_MGMT_URI"
+raw :: String -> IO ByteString
+raw path = do
+    uri <- getEnvUri "RABBITMQ_MGMT_URI"
+    getBody $ joinUri uri path
+
+columns :: (Data a) => a -> String
+columns = join . map constrFields . dataTypeConstrs . dataTypeOf
+
+join :: [[String]] -> String
+join = concat . intersperse "," . concat
