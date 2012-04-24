@@ -8,7 +8,7 @@ module Monitor.RabbitMQ (
 import GHC.Generics (Generic)
 import Data.Data
 import Data.Char    (toLower)
-import Data.Aeson   (FromJSON, ToJSON, decode)
+import Data.Aeson   (FromJSON, decode)
 import Data.List    (concat, intersperse)
 import Monitor.Uri  (Uri, getEnvUri, joinUri)
 import Monitor.Http (getBody)
@@ -20,7 +20,6 @@ data Details = Details
     } deriving (Show, Generic, Data, Typeable)
 
 instance FromJSON Details
-instance ToJSON Details
 
 data MessageStats = MessageStats
     { confirm                :: Integer
@@ -40,7 +39,6 @@ data MessageStats = MessageStats
     } deriving (Show, Generic, Data, Typeable)
 
 instance FromJSON MessageStats
-instance ToJSON MessageStats
 
 data QueueTotals = QueueTotals
     { messages                :: Integer
@@ -49,7 +47,6 @@ data QueueTotals = QueueTotals
     } deriving (Show, Generic, Data, Typeable)
 
 instance FromJSON QueueTotals
-instance ToJSON QueueTotals
 
 data Overview = Overview
     { management_version :: String
@@ -59,7 +56,6 @@ data Overview = Overview
     } deriving (Show, Generic, Data, Typeable)
 
 instance FromJSON Overview
-instance ToJSON Overview
 instance Retrievable Overview
 
 class (FromJSON a, Data a, Typeable a) => Retrievable a where
