@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
@@ -7,8 +6,9 @@ module Monitor.RabbitMQ.Overview (
   ) where
 
 import GHC.Generics (Generic)
-import Data.Data    (Data, Typeable)
-import Data.Aeson   (FromJSON, ToJSON)
+import Data.Data
+import Data.Aeson   (FromJSON, ToJSON, decode)
+import Monitor.RabbitMQ.Retrievable
 
 data Details = Details
     { rate       :: Float
@@ -57,3 +57,4 @@ data Overview = Overview
 
 instance FromJSON Overview
 instance ToJSON Overview
+instance Retrievable Overview
