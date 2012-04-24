@@ -21,11 +21,9 @@ executable gamekeeper
                   , mtl
                   , ghc-prim
                   , transformers
-                  , network
-                  , conduit
-                  , http-types
-                  , http-conduit
                   , regex-compat
+                  , conduit
+                  , http-conduit
                   , bytestring
                   , attoparsec
                   , aeson

@@ -8,7 +8,7 @@ module Monitor.RabbitMQ (
 import GHC.Generics (Generic)
 import Data.Maybe   (fromJust)
 import Data.Aeson   (FromJSON, ToJSON, decode)
-import Monitor.Uri  (Uri, getEnvUri, addPath)
+import Monitor.Uri  (Uri, getEnvUri, join)
 import Monitor.Http (getBody)
 
 data Details = Details
@@ -40,7 +40,7 @@ instance ToJSON Overview
 overview :: IO (Maybe Overview)
 overview = do
     uri <- getUri
-    body <- getBody $ addPath uri "/api/overview"
+    body <- getBody $ join uri "/api/overview"
     return (decode body :: Maybe Overview)
 
 getUri :: IO Uri

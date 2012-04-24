@@ -1,50 +1,29 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Monitor.Uri (
     Uri(..)
   , getEnvUri
-  , addPath
+  , join
   ) where
 
-import System.Environment (getEnv)
-import Network.HTTP.Types (Ascii)
-import Network.URI hiding (scheme, uriPath)
-import Data.List          (delete, takeWhile)
-import Data.Maybe         (fromJust)
-import Text.Regex
+import System.Environment    (getEnv)
+import Text.Regex            (Regex(..), matchRegex, mkRegex)
+import Data.ByteString.Char8 (ByteString, pack)
 
-import qualified Data.ByteString.Char8 as S
-
-data Uri = Uri
-    { uriUser :: Ascii
-    , uriPass :: Ascii
-    , uriPath :: String
-    } deriving (Show)
+data Uri = Uri ByteString ByteString String deriving (Show)
 
 getEnvUri :: String -> IO Uri
 getEnvUri env = do
     var <- getEnv env
-    return $ conv $ fromJust $ parseURI var
+    return $ conv $ matchRegex uri var
 
-addPath :: Uri -> String -> Uri
-addPath (Uri x y z) path = Uri x y $ concat [z, path]
+join :: Uri -> String -> Uri
+join (Uri user pass path) path' = Uri user pass (path ++ path')
 
-conv :: URI -> Uri
-conv var = Uri (S.pack $ user var) (S.pack $ pass var) (host var)
+uri :: Regex
+uri = mkRegex "^http://(.+):(.+)@(.+)$"
 
-auth :: URI -> String
-auth = uriUserInfo . fromJust . uriAuthority
+conv :: Maybe [String] -> Uri
+conv (Just [user, pass, path]) = Uri (pack user) (pack pass) (absolute path)
+conv Nothing = error "Invalid Uri, expected: http://<user>:<pass>@<host+port+path>"
 
-user :: URI -> String
-user = takeWhile (/= ':') . auth
-
-pass :: URI -> String
-pass = delete '@' . tail . dropWhile (/= ':') . auth
-
-scheme :: URI -> String
-scheme u  = case uriScheme u of
-    _ -> "http://"
-
-host :: URI -> String
-host u = case fromJust $ uriAuthority u of
-    (URIAuth _ host port) -> concat [scheme u, host, port]
+absolute :: String -> String
+absolute = ("http://" ++) . reverse . dropWhile (== '/') . reverse
