@@ -10,15 +10,16 @@ import Data.List    (concat, intersperse)
 import Data.Data
 import Data.Char    (toLower)
 import Data.Aeson   (FromJSON, decode)
-import Monitor.Uri  (Uri, joinUri)
+import Monitor.Uri  (Uri, getEnvUri, joinUri)
 import Monitor.Http (getBody)
 
 class (FromJSON a, Data a, Typeable a) => Retrievable a where
     location :: a -> String
     location m = (root m) ++ (columns m)
 
-    retrieve :: Uri -> a -> IO (Maybe a)
-    retrieve base m = do
+    retrieve :: a -> IO (Maybe a)
+    retrieve m = do
+        base <- getEnvUri "RABBITMQ_MGMT_URI"
         body <- getBody $ joinUri base $ location m
         return (decode body :: (FromJSON m) => Maybe m)
 
