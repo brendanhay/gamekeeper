@@ -17,4 +17,6 @@ getBody uri = do
         return body
 
 request :: Uri -> (Request m)
-request (Uri user pass path) = applyBasicAuth user pass $ fromJust $ parseUrl path
+request (Uri user pass path) = case parseUrl path of
+    Just req -> applyBasicAuth user pass req
+    Nothing  -> error "Invalid Request"
