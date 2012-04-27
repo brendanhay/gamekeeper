@@ -58,9 +58,7 @@ data QueueTotals = QueueTotals
 instance FromJSON QueueTotals
 
 data Overview = Overview
-    { management_version :: String
-    , statistics_level   :: String
-    , message_stats      :: MessageStats
+    { message_stats      :: MessageStats
     , queue_totals       :: QueueTotals
     } deriving (Show, Generic, Data, Typeable)
 
@@ -76,7 +74,9 @@ instance FromJSON Count where
 
 overview :: IO (Maybe Overview)
 overview = do
-    body <- retrieve "overview" [("columns", fields (undefined :: Overview))]
+    let f =  [("columns", fields (undefined :: Overview))]
+    print f
+    body <- retrieve "overview" f
     return $ (decode' body :: Maybe Overview)
 
 counts :: IO [Count]
@@ -95,7 +95,7 @@ retrieve res params = do
     getBody $ join base ("/api/" ++ res) params
 
 fields :: Data a => a -> [String]
-fields = map concat . map constrFields . dataTypeConstrs . dataTypeOf
+fields = concat . map constrFields . dataTypeConstrs . dataTypeOf
 
 value :: Maybe Count -> Int
 value (Just (Count _ n)) = n
