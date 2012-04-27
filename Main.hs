@@ -6,3 +6,5 @@ main :: IO ()
 main = do
     counts' <- counts
     print counts'
+    overview' <- overview
+    print overview'

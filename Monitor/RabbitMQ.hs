@@ -4,11 +4,10 @@ module Monitor.RabbitMQ (
     Overview
   , Count
   , overview
-  , count
   , counts
+  , count
   ) where
 
-import Control.Monad.IO.Class
 import GHC.Generics  (Generic)
 import Control.Monad (mzero)
 import Data.Data
@@ -80,15 +79,13 @@ overview = do
     body <- retrieve "overview" [("columns", fields (undefined :: Overview))]
     return $ (decode' body :: Maybe Overview)
 
+counts :: IO [Count]
+counts = sequence $ map count table
+
 count :: String -> IO Count
 count res = do
     body <- retrieve res [("columns", [])]
-    return $ Count res $ case (decode' body :: Maybe Count) of
-        Just (Count _ n) -> n
-        Nothing          -> 0
-
-counts :: IO [Count]
-counts = sequence $ map count table
+    return $ Count res $ value (decode' body :: Maybe Count)
 
 -- Private
 
@@ -97,12 +94,16 @@ retrieve res params = do
     base <- getEnvUri "RABBITMQ_MGMT_URI"
     getBody $ join base ("/api/" ++ res) params
 
+fields :: Data a => a -> [String]
+fields = map concat . map constrFields . dataTypeConstrs . dataTypeOf
+
+value :: Maybe Count -> Int
+value (Just (Count _ n)) = n
+value Nothing            = 0
+
 table :: [String]
 table =
     [ "exchanges"
     , "queues"
     , "bindings"
     ]
-
-fields :: Data a => a -> [String]
-fields = map concat . map constrFields . dataTypeConstrs . dataTypeOf

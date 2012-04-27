@@ -18,7 +18,6 @@ executable gamekeeper
   main-is:          Main.hs
   build-depends:    base >= 3 && < 5
                   , ghc-prim
-                  , transformers
                   , regex-compat
                   , http-conduit
                   , utf8-string
