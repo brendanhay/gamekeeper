@@ -74,8 +74,6 @@ instance FromJSON Count where
 
 overview :: IO (Maybe Overview)
 overview = do
-    let f =  [("columns", fields (undefined :: Overview))]
-    print f
     body <- retrieve "overview" f
     return $ (decode' body :: Maybe Overview)
 
