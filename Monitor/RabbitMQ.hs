@@ -5,7 +5,6 @@ module Monitor.RabbitMQ (
   , Count
   , overview
   , counts
-  , count
   ) where
 
 import GHC.Generics  (Generic)
@@ -80,11 +79,6 @@ overview = do
 counts :: IO [Count]
 counts = sequence $ map count table
 
-count :: String -> IO Count
-count res = do
-    body <- retrieve res [("columns", [])]
-    return $ Count res $ value (decode' body :: Maybe Count)
-
 -- Private
 
 retrieve :: String -> [Param] -> IO L.ByteString
@@ -98,6 +92,11 @@ fields = concat . map constrFields . dataTypeConstrs . dataTypeOf
 value :: Maybe Count -> Int
 value (Just (Count _ n)) = n
 value Nothing            = 0
+
+count :: String -> IO Count
+count res = do
+    body <- retrieve res [("columns", [])]
+    return $ Count res $ value (decode' body :: Maybe Count)
 
 table :: [String]
 table =

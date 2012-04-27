@@ -3,10 +3,11 @@ module Monitor.Http (
   ) where
 
 import Network.HTTP.Conduit
-import Data.Maybe  (fromJust)
 import Monitor.Uri (Uri(..))
 
 import qualified Data.ByteString.Lazy as L
+
+-- API
 
 getBody :: Uri -> IO L.ByteString
 getBody uri = do
@@ -16,7 +17,9 @@ getBody uri = do
         Response _ _ _ body <- httpLbs req manager
         return body
 
-request :: Uri -> (Request m)
+-- Private
+
+request :: Uri -> Request m
 request (Uri user pass path) = case parseUrl path of
     Just req -> applyBasicAuth user pass req
     Nothing  -> error "Invalid Request"

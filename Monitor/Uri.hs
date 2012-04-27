@@ -14,6 +14,8 @@ type Param = (String, [String])
 
 data Uri = Uri ByteString ByteString String deriving (Show)
 
+-- API
+
 getEnvUri :: String -> IO Uri
 getEnvUri env = do
     var <- getEnv env
@@ -21,6 +23,8 @@ getEnvUri env = do
 
 join :: Uri -> String -> [Param] -> Uri
 join (Uri x y z) path params = Uri x y $ concat [z, path, conj params]
+
+-- Private
 
 conj :: [Param] -> String
 conj = ('?' :) . intercalate "&" . map flat
