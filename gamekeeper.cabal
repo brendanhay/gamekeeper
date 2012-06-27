@@ -1,11 +1,11 @@
 name:               gamekeeper
 version:            0.1
-synopsis:           Graphite/statsd statistics for RabbitMQ
-description:        Retrieve statistics from the HTTP RabbitMQ Management Interface and deliver them to statsd via udp
+synopsis:           Management tools for RabbitMQ
+description:        Retrieve statistics, perform operations tasks, and manage RabbitMQ via the HTTP API
 license-file:       LICENSE
 
-author:             Brendan Hay
-maintainer:         brendan@soundcloud.com
+author:             Brendan Hay <brendan@soundcloud.com>
+maintainer:         Brendan Hay <brendan@soundcloud.com>
 homepage:           http://github.com/brendanhay/gamekeeper
 
 stability:          Experimental
@@ -14,9 +14,14 @@ cabal-version:      >= 1.10
 extra-source-files: README.md
 
 executable gamekeeper
-  default-language: Haskell2010
   main-is:          Main.hs
-  build-depends:    base >= 3 && < 5
+  hs-source-dirs:   src
+  default-language: Haskell2010
+
+  ghc-options:      -Wall -O -threaded -rtsopts
+  ghc-prof-options: -prof -fprof-auto -auto-all -with-rtsopts=-p
+
+  build-depends:    base >= 4.3 && < 5
                   , ghc-prim
                   , regex-compat
                   , http-conduit
@@ -25,3 +30,4 @@ executable gamekeeper
                   , vector
                   , attoparsec
                   , aeson
+                  , cmdargs

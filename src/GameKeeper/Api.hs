@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric, DeriveDataTypeable #-}
 
-module Monitor.RabbitMQ (
+module GameKeeper.Api (
     Overview
   , Count
   , overview
@@ -15,8 +15,8 @@ import Data.Maybe    (fromJust)
 import Data.Aeson    (FromJSON, decode')
 import Data.Aeson.Types
 import Data.List     (concat, intersperse, intercalate)
-import Monitor.Uri   (Uri, Param, getEnvUri, join)
-import Monitor.Http  (getBody)
+import GameKeeper.Uri   (Uri, Param, getEnvUri, join)
+import GameKeeper.Http  (getBody)
 
 import qualified Data.Vector          as V
 import qualified Data.ByteString.Lazy as L

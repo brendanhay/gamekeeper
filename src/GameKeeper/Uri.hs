@@ -1,4 +1,4 @@
-module Monitor.Uri (
+module GameKeeper.Uri (
     Uri(..)
   , Param(..)
   , getEnvUri
@@ -10,7 +10,7 @@ import Text.Regex            (Regex(..), matchRegex, mkRegex)
 import Data.List             (concat, intercalate)
 import Data.ByteString.Char8 (ByteString, pack)
 
-type Param = (String, [String])
+data Param = String [String]
 
 data Uri = Uri ByteString ByteString String deriving (Show)
 

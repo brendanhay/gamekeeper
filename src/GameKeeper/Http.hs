@@ -1,9 +1,9 @@
-module Monitor.Http (
+module GameKeeper.Http (
     getBody
   ) where
 
 import Network.HTTP.Conduit
-import Monitor.Uri (Uri(..))
+import GameKeeper.Uri (Uri(..))
 
 import qualified Data.ByteString.Lazy as L
 
