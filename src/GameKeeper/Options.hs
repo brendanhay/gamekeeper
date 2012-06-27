@@ -33,10 +33,10 @@ parseOptions = do
 --
 
 programName, programVersion, programInfo, copyright :: String
-programName = "gamekeeper"
+programName    = "gamekeeper"
 programVersion = "0.1.0"
-programInfo = programName ++ " version " ++ programVersion
-copyright = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
+programInfo    = programName ++ " version " ++ programVersion
+copyright      = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
 parse :: Mode (CmdArgs Options)
 parse = cmdArgsMode $ modes [staleConnections, monitor]
