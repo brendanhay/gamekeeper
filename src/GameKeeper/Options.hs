@@ -11,7 +11,7 @@ import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
 
 data Options =
-    StaleConnections
+    CleanConnections
         { optUri  :: String
         , optDry  :: Bool
         , optDays :: Int
@@ -32,21 +32,21 @@ parseOptions = do
 -- Internal
 --
 
-_PROGRAM_NAME, _PROGRAM_VERSION, _PROGRAM_INFO, _COPYRIGHT :: String
-_PROGRAM_NAME = "gamekeeper"
-_PROGRAM_VERSION = "0.1.0"
-_PROGRAM_INFO = _PROGRAM_NAME ++ " version " ++ _PROGRAM_VERSION
-_COPYRIGHT = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
+programName, programVersion, programInfo, copyright :: String
+programName = "gamekeeper"
+programVersion = "0.1.0"
+programInfo = programName ++ " version " ++ programVersion
+copyright = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
 parse :: Mode (CmdArgs Options)
 parse = cmdArgsMode $ modes [staleConnections, monitor]
-    &= versionArg [explicit, name "version", name "v", summary _PROGRAM_INFO]
-    &= summary (_PROGRAM_INFO ++ ", " ++ _COPYRIGHT)
+    &= versionArg [explicit, name "version", name "v", summary programInfo]
+    &= summary (programInfo ++ ", " ++ copyright)
     &= helpArg [explicit, name "help", name "h"]
-    &= program _PROGRAM_NAME
+    &= program programName
 
 validate :: Options -> IO Options
-validate opts@StaleConnections{..} = do
+validate opts@CleanConnections{..} = do
     exitWhen (null optUri) "--uri cannot be blank"
     return opts
 validate opts = return opts
@@ -55,7 +55,7 @@ exitWhen :: Bool -> String -> IO ()
 exitWhen p msg = when p $ putStrLn msg >> exitWith (ExitFailure 1)
 
 staleConnections :: Options
-staleConnections = StaleConnections
+staleConnections = CleanConnections
     { optUri = "http://guest:guest@localhost:55672"
         &= name "uri"
         &= typ  "URI"
