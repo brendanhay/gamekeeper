@@ -46,9 +46,9 @@ parse = cmdArgsMode $ modes [staleConnections, monitor]
     &= program programName
 
 validate :: Options -> IO Options
-validate opts@CleanConnections{..} = do
-    exitWhen (null optUri) "--uri cannot be blank"
-    return opts
+validate opts@CleanConnections{..} = return opts
+    -- exitWhen (null optUri) "--uri cannot be blank"
+    -- return opts
 validate opts = return opts
 
 exitWhen :: Bool -> String -> IO ()
@@ -69,7 +69,9 @@ staleConnections = CleanConnections
         &= name "days"
         &= help "The number of days to prune (default: 30)"
         &= explicit
-    }
+    } &= name "clean-connections"
+      &= help "Perform stale connection cleanup"
+      &= explicit
 
 monitor :: Options
 monitor = Monitor
@@ -78,4 +80,5 @@ monitor = Monitor
         &= typ  "URI"
         &= help "The uri (default: any)"
         &= explicit
-    }
+    } &= name "monitor"
+      &= help "Deliver statistics and metrics to Graphite"
