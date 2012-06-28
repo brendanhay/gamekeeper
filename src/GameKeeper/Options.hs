@@ -6,19 +6,24 @@ module GameKeeper.Options
     ) where
 
 import Control.Monad          (when)
+import Data.String            (IsString)
 import System.Console.CmdArgs
 import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
 
 data Options =
+    PushStatistics
+        { optUri :: String
+        }
+      |
+    ShowStatistics
+        { optUri :: String
+        }
+      |
     CleanConnections
         { optUri  :: String
         , optDry  :: Bool
         , optDays :: Int
-        }
-      |
-    Monitor
-        { optUri :: String
         }
       deriving (Data, Typeable, Show)
 
@@ -29,7 +34,7 @@ parseOptions = do
     validate opts
 
 --
--- Internal
+-- Parsing
 --
 
 programName, programVersion, programInfo, copyright :: String
@@ -39,27 +44,52 @@ programInfo    = programName ++ " version " ++ programVersion
 copyright      = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
 parse :: Mode (CmdArgs Options)
-parse = cmdArgsMode $ modes [staleConnections, monitor]
+parse = cmdArgsMode $ modes [pushStatistics, showStatistics, cleanConnections]
     &= versionArg [explicit, name "version", name "v", summary programInfo]
     &= summary (programInfo ++ ", " ++ copyright)
     &= helpArg [explicit, name "help", name "h"]
     &= program programName
 
 validate :: Options -> IO Options
+validate opts@PushStatistics{..}   = return opts
+validate opts@ShowStatistics{..}   = return opts
 validate opts@CleanConnections{..} = return opts
     -- exitWhen (null optUri) "--uri cannot be blank"
     -- return opts
-validate opts = return opts
 
 exitWhen :: Bool -> String -> IO ()
 exitWhen p msg = when p $ putStrLn msg >> exitWith (ExitFailure 1)
 
-staleConnections :: Options
-staleConnections = CleanConnections
-    { optUri = "http://guest:guest@localhost:55672"
+--
+-- Modes
+--
+
+pushStatistics :: Options
+pushStatistics = PushStatistics
+    { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
-        &= help "The uri (default: any)"
+        &= help "The uri (default: guest@localhost)"
+        &= explicit
+    } &= name "push-statistics"
+      &= help "Deliver statistics and metrics to Graphite"
+
+showStatistics :: Options
+showStatistics = ShowStatistics
+    { optUri = defaultUri
+        &= name "uri"
+        &= typ  "URI"
+        &= help "The uri (default: guest@localhost)"
+        &= explicit
+    } &= name "show-statistics"
+      &= help "Print statistics and metrics to stdout"
+
+cleanConnections :: Options
+cleanConnections = CleanConnections
+    { optUri = defaultUri
+        &= name "uri"
+        &= typ  "URI"
+        &= help "The uri (default: guest@localhost)"
         &= explicit
     , optDry = True
         &= name "dry"
@@ -73,12 +103,9 @@ staleConnections = CleanConnections
       &= help "Perform stale connection cleanup"
       &= explicit
 
-monitor :: Options
-monitor = Monitor
-    { optUri = "http://guest:guest@localhost:55672"
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: any)"
-        &= explicit
-    } &= name "monitor"
-      &= help "Deliver statistics and metrics to Graphite"
+--
+-- Defaults
+--
+
+defaultUri :: String
+defaultUri = "http://guest:guest@localhost:55672"

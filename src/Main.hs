@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Main
     ( main
     ) where
@@ -8,10 +10,13 @@ main :: IO ()
 main = do
     opts <- parseOptions
     print opts
+    exec opts
 
---     lookup command dispatch
+--
+-- Internal
+--
 
--- dispatch :: [(String, [String] -> IO ())]
--- dispatch =  [ ("counts", counts)
---             , ("overview", overview)
---             ]
+exec :: Options -> IO ()
+exec PushStatistics{..}   = return ()
+exec ShowStatistics{..}   = return ()
+exec CleanConnections{..} = return ()
