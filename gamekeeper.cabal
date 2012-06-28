@@ -25,6 +25,7 @@ executable gamekeeper
                   , ghc-prim
                   , regex-compat
                   , http-conduit
+                  , network
                   , utf8-string
                   , bytestring
                   , vector

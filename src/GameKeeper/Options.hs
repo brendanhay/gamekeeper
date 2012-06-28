@@ -6,7 +6,6 @@ module GameKeeper.Options
     ) where
 
 import Control.Monad          (when)
-import Data.String            (IsString)
 import System.Console.CmdArgs
 import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
@@ -108,4 +107,4 @@ cleanConnections = CleanConnections
 --
 
 defaultUri :: String
-defaultUri = "http://guest:guest@localhost:55672"
+defaultUri = "http://guest:guest@127.0.0.1:55672/"

@@ -5,6 +5,11 @@ module Main
     ) where
 
 import GameKeeper.Options
+import GameKeeper.Connections
+
+--
+-- API
+--
 
 main :: IO ()
 main = do
@@ -13,10 +18,10 @@ main = do
     exec opts
 
 --
--- Internal
+-- Private
 --
 
 exec :: Options -> IO ()
 exec PushStatistics{..}   = return ()
 exec ShowStatistics{..}   = return ()
-exec CleanConnections{..} = return ()
+exec CleanConnections{..} = connections optUri >>= print

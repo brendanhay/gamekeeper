@@ -69,7 +69,9 @@ instance FromJSON Count where
     parseJSON (Array vector) = return $ Count "" $ V.length vector
     parseJSON _              = mzero
 
+--
 -- API
+--
 
 overview :: IO (Maybe Overview)
 overview = do
@@ -79,7 +81,9 @@ overview = do
 counts :: IO [Count]
 counts = sequence $ map count table
 
+--
 -- Private
+--
 
 retrieve :: String -> [Param] -> IO L.ByteString
 retrieve res params = do
