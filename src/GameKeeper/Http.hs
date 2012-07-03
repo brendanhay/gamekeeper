@@ -4,13 +4,13 @@ module GameKeeper.Http (
     getBody
   ) where
 
-import Network.HTTP.Conduit
-import Text.Regex            (matchRegex, mkRegex)
-import Data.ByteString.Char8 (ByteString, pack)
+import Network.HTTP.Conduit hiding (queryString, path)
+import Text.Regex                  (matchRegex, mkRegex)
+import Data.ByteString.Char8       (ByteString, pack)
 
-import qualified Data.ByteString.Lazy  as L
+import qualified Data.ByteString.Lazy as L
 
-data Uri = Uri ByteString ByteString String deriving (Show)
+data Uri = Uri ByteString ByteString String
 
 --
 -- API
@@ -40,4 +40,3 @@ parseUri str = case matchRegex (mkRegex "^(.+://)(.+):(.+)@(.+)$") str of
             Uri (pack user) (pack pass) $ scheme ++ path
         _ ->
             error "Invalid URI"
-
