@@ -35,8 +35,8 @@ data Connection = Connection
     } deriving (Show, Data, Typeable)
 
 instance FromJSON Connection where
-    parseJSON (Object v) = Connection <$> -- fmap
-        v .: "name" <*> -- apply
+    parseJSON (Object v) = Connection <$>
+        v .: "name" <*>
         v .: "user" <*>
         ((v .: "client_properties") >>= (.:? "product")) <*>
         ((v .: "recv_oct_details") >>= (.: "last_event")) <*>
