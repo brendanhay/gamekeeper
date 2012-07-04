@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable, RecordWildCards,
     TypeSynonymInstances #-}
 
@@ -25,6 +26,7 @@ import Control.Monad       (liftM, filterM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
 import Data.Data
+import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Vector         (Vector, toList)
 import GameKeeper.Http
@@ -33,8 +35,8 @@ data Connection = Connection
     { name      :: String
     , user      :: String
     , client    :: Maybe String
-    , last_recv :: Integer
-    , last_send :: Integer
+    , last_recv :: NominalDiffTime
+    , last_send :: NominalDiffTime
     } deriving (Show, Data, Typeable)
 
 instance FromJSON Connection where
@@ -45,6 +47,9 @@ instance FromJSON Connection where
         ((v .: "recv_oct_details") >>= (.: "last_event")) <*>
         ((v .: "send_oct_details") >>= (.: "last_event"))
     parseJSON _ = empty
+
+instance FromJSON NominalDiffTime where
+    parseJSON json = liftM msToSeconds (parseJSON json)
 
 --
 -- API
@@ -69,12 +74,13 @@ stale base days = connections base >>= filterM (idle days)
 
 idle :: Integer -> Connection -> IO Bool
 idle days Connection{..} =
-    liftM (check last_recv last_send) currentMilliseconds
+    liftM (check last_recv last_send) getPOSIXTime
   where
     check x y c = diff c x && diff c y
-    diff c      = (c >=) . (86400 * days +)
+    diff c n    = c >= addDays n days
 
-currentMilliseconds :: IO Integer
-currentMilliseconds = do
-    seconds <- getPOSIXTime
-    return . (* 1000) . round . realToFrac $ toRational seconds
+msToSeconds :: Integer -> NominalDiffTime
+msToSeconds = realToFrac . (/ 1000) . fromIntegral
+
+addDays :: NominalDiffTime -> Integer -> NominalDiffTime
+addDays time days = time + 86400 * fromIntegral days
