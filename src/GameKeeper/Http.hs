@@ -16,9 +16,10 @@ module GameKeeper.Http (
     getBody
   ) where
 
-import Network.HTTP.Conduit hiding (queryString, path)
-import Text.Regex                  (matchRegex, mkRegex)
-import Data.ByteString.Char8       (ByteString, pack)
+import Data.ByteString.Char8        (ByteString, pack)
+import Network.HTTP.Conduit  hiding (queryString, path)
+import Text.Regex                   (matchRegex, mkRegex)
+import GameKeeper.Console           (displayInfo)
 
 import qualified Data.ByteString.Lazy as L
 
@@ -30,7 +31,7 @@ data Uri = Uri ByteString ByteString String
 
 getBody :: String -> IO L.ByteString
 getBody uri = do
-    print uri
+    displayInfo "GET" uri
     withManager $ \manager -> do
         Response _ _ _ body <- httpLbs (mkRequest uri) manager
         return body
@@ -42,7 +43,7 @@ getBody uri = do
 mkRequest :: String -> Request m
 mkRequest uri = case parseUrl path of
     Just req -> applyBasicAuth user pass req
-    Nothing  -> error $ "Invalid Request:"
+    Nothing  -> error $ "Invalid Request: " ++ uri
   where
     (Uri user pass path) = parseUri uri
 
@@ -51,4 +52,4 @@ parseUri str = case matchRegex (mkRegex "^(.+://)(.+):(.+)@(.+)$") str of
         Just [scheme, user, pass, path] ->
             Uri (pack user) (pack pass) $ scheme ++ path
         _ ->
-            error "Invalid URI"
+            error $ "Invalid URI: " ++ str

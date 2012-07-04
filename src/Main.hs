@@ -16,8 +16,9 @@ module Main
     ( main
     ) where
 
-import GameKeeper.Options
 import GameKeeper.Connections
+import GameKeeper.Console     (displayInfo)
+import GameKeeper.Options
 
 --
 -- API
@@ -26,14 +27,16 @@ import GameKeeper.Connections
 main :: IO ()
 main = do
     opts <- parseOptions
-    print opts
-    exec opts
+    displayInfo "Mode" $ show opts
+    runMode opts
 
 --
 -- Private
 --
 
-exec :: Options -> IO ()
-exec PushStatistics{..}   = return ()
-exec ShowStatistics{..}   = return ()
-exec CleanConnections{..} = connections optUri >>= print
+runMode :: Options -> IO ()
+runMode PushStatistics{..}   = return ()
+runMode ShowStatistics{..}   = return ()
+runMode CleanConnections{..} = do
+    resp <- connections optUri
+    displayInfo "Response" $ show resp
