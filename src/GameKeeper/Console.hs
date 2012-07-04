@@ -21,7 +21,7 @@ module GameKeeper.Console (
 --
 
 displayInfo :: String -> String -> IO ()
-displayInfo action output = putStrLn $ concat [pad (action ++ ": "), output]
+displayInfo action output = putStrLn $ pad (action ++ ": ") ++ output
 
 --
 -- Private

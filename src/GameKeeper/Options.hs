@@ -34,7 +34,7 @@ data Options =
     CleanConnections
         { optUri  :: String
         , optDry  :: Bool
-        , optDays :: Int
+        , optDays :: Integer
         }
       deriving (Data, Typeable, Show)
 

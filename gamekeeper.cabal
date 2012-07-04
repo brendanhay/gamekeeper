@@ -32,3 +32,4 @@ executable gamekeeper
                   , attoparsec
                   , aeson
                   , cmdargs
+                  , time

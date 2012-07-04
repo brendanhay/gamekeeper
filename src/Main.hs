@@ -17,7 +17,7 @@ module Main
     ) where
 
 import GameKeeper.Connections
-import GameKeeper.Console     (displayInfo)
+import GameKeeper.Console (displayInfo)
 import GameKeeper.Options
 
 --
@@ -38,5 +38,5 @@ runMode :: Options -> IO ()
 runMode PushStatistics{..}   = return ()
 runMode ShowStatistics{..}   = return ()
 runMode CleanConnections{..} = do
-    resp <- connections optUri
+    resp <- stale optUri optDays
     displayInfo "Response" $ show resp
