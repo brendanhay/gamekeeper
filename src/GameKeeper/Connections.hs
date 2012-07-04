@@ -20,15 +20,15 @@ module GameKeeper.Connections (
   , stale
   ) where
 
-import Prelude hiding      (product)
-import Control.Applicative ((<$>), (<*>), empty)
-import Control.Monad       (liftM, filterM)
-import Data.Aeson          (decode')
+import Prelude hiding        (product)
+import Control.Applicative   ((<$>), (<*>), empty)
+import Control.Monad         (liftM, filterM)
+import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Data
 import Data.Time.Clock
-import Data.Time.Clock.POSIX
-import Data.Vector         (Vector, toList)
+import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.Vector           (Vector, toList)
 import GameKeeper.Http
 
 data Connection = Connection
@@ -58,7 +58,6 @@ instance FromJSON NominalDiffTime where
 connections :: String -> IO [Connection]
 connections base = do
     body <- getBody $ concat [base, "api/connections", qs]
-    print body
     return $ case (decode' body :: Maybe (Vector Connection)) of
         Just v  -> toList v
         Nothing -> []
