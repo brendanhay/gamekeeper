@@ -28,7 +28,6 @@ executable gamekeeper
                     OverloadedStrings
                   , DeriveDataTypeable
                   , RecordWildCards
-                  , DeriveGeneric
                   , TypeSynonymInstances
 
   ghc-options:      -Wall -O -threaded -rtsopts
