@@ -29,8 +29,10 @@ data Metric = Metric String String
 data SinkType = Ganglia | Graphite | Stdout
     deriving (Data, Typeable, Show)
 
+type Emitter = Metric -> IO ()
+
 data Sink = Sink
-    { push :: Metric -> IO ()
+    { push :: Emitter
     }
 
 --
