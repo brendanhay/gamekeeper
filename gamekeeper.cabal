@@ -2,6 +2,7 @@ name:               gamekeeper
 version:            0.1.0
 synopsis:           Management and monitoring tools for RabbitMQ
 description:        Retrieve statistics/metrics, perform operations tasks, and manage RabbitMQ via the HTTP API
+license:            OtherLicense
 license-file:       LICENSE
 author:             Brendan Hay <brendan@soundcloud.com>
 maintainer:         Brendan Hay <brendan@soundcloud.com>
@@ -45,3 +46,4 @@ executable gamekeeper
                   , aeson
                   , cmdargs
                   , time
+                  , gmetric-haskell
