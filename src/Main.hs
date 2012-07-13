@@ -15,8 +15,9 @@ module Main (
     ) where
 
 import GameKeeper.Connections
-import GameKeeper.Console (displayInfo)
+import GameKeeper.Console     (displayInfo)
 import GameKeeper.Options
+import GameKeeper.Sink
 
 --
 -- API
@@ -33,8 +34,9 @@ main = do
 --
 
 runMode :: Options -> IO ()
-runMode PushStatistics{..}   = return ()
-runMode ShowStatistics{..}   = return ()
+runMode PushStatistics{..}   = do
+    sink <- open optSink
+    push sink $ Metric "something" "1"
 runMode CleanConnections{..} = do
     resp <- stale optUri optDays
     displayInfo "Response" $ show resp

@@ -19,22 +19,29 @@ import Control.Monad          (when)
 import System.Console.CmdArgs
 import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
+import GameKeeper.Sink
 
 data Options =
-    PushStatistics
+      PushStatistics
         { optUri :: String
+        , optSink :: SinkType
         }
-      |
-    ShowStatistics
-        { optUri :: String
-        }
-      |
-    CleanConnections
+    | CleanConnections
         { optUri  :: String
         , optDry  :: Bool
         , optDays :: Integer
         }
       deriving (Data, Typeable, Show)
+
+--
+-- API
+--
+
+parseOptions :: IO Options
+parseOptions = do
+    raw  <- getArgs
+    opts <- (if null raw then withArgs ["--help"] else id) $ cmdArgsRun parse
+    validate opts
 
 --
 -- Parsing
@@ -46,14 +53,8 @@ programVersion = "0.1.0"
 programInfo    = programName ++ " version " ++ programVersion
 copyright      = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
-parseOptions :: IO Options
-parseOptions = do
-    raw  <- getArgs
-    opts <- (if null raw then withArgs ["--help"] else id) $ cmdArgsRun parse
-    validate opts
-
 parse :: Mode (CmdArgs Options)
-parse = cmdArgsMode $ modes [pushStatistics, showStatistics, cleanConnections]
+parse = cmdArgsMode $ modes [pushStatistics, cleanConnections]
     &= versionArg [explicit, name "version", name "v", summary programInfo]
     &= summary (programInfo ++ ", " ++ copyright)
     &= helpArg [explicit, name "help", name "h"]
@@ -61,7 +62,6 @@ parse = cmdArgsMode $ modes [pushStatistics, showStatistics, cleanConnections]
 
 validate :: Options -> IO Options
 validate opts@PushStatistics{..}   = return opts
-validate opts@ShowStatistics{..}   = return opts
 validate opts@CleanConnections{..} = return opts
     -- exitWhen (null optUri) "--uri cannot be blank"
     -- return opts
@@ -80,18 +80,13 @@ pushStatistics = PushStatistics
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
         &= explicit
-    } &= name "push-statistics"
-      &= help "Deliver statistics and metrics to Graphite"
-
-showStatistics :: Options
-showStatistics = ShowStatistics
-    { optUri = defaultUri
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: guest@localhost)"
+    , optSink = Stdout
+        &= name "sink"
+        &= typ  "SINK"
+        &= help "The sink to write metrics to (default: stdout)"
         &= explicit
-    } &= name "show-statistics"
-      &= help "Print statistics and metrics to stdout"
+    } &= name "push-statistics"
+      &= help "Deliver statistics and metrics to the specified sink"
 
 cleanConnections :: Options
 cleanConnections = CleanConnections

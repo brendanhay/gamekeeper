@@ -11,11 +11,11 @@
 --
 
 module GameKeeper.Api (
-    Overview
-  , Count
-  , overview
-  , counts
-  ) where
+      Overview
+    , Count
+    , overview
+    , counts
+    ) where
 
 import GHC.Generics  (Generic)
 import Control.Monad (mzero)
