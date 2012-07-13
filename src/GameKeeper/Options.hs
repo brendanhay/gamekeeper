@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, RecordWildCards #-}
-
 -- |
 -- Module      : GameKeeper.Options
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
@@ -12,8 +10,8 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module GameKeeper.Options
-    ( Options(..)
+module GameKeeper.Options (
+      Options(..)
     , parseOptions
     ) where
 
@@ -38,12 +36,6 @@ data Options =
         }
       deriving (Data, Typeable, Show)
 
-parseOptions :: IO Options
-parseOptions = do
-    raw  <- getArgs
-    opts <- (if null raw then withArgs ["--help"] else id) $ cmdArgsRun parse
-    validate opts
-
 --
 -- Parsing
 --
@@ -53,6 +45,12 @@ programName    = "gamekeeper"
 programVersion = "0.1.0"
 programInfo    = programName ++ " version " ++ programVersion
 copyright      = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
+
+parseOptions :: IO Options
+parseOptions = do
+    raw  <- getArgs
+    opts <- (if null raw then withArgs ["--help"] else id) $ cmdArgsRun parse
+    validate opts
 
 parse :: Mode (CmdArgs Options)
 parse = cmdArgsMode $ modes [pushStatistics, showStatistics, cleanConnections]

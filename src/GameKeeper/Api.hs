@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric, DeriveDataTypeable #-}
-
 -- |
 -- Module      : GameKeeper.API
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>

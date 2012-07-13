@@ -1,6 +1,4 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, RecordWildCards,
-    TypeSynonymInstances #-}
 
 -- |
 -- Module      : GameKeeper.Connections

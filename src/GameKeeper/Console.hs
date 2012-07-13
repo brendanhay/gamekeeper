@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- |
 -- Module      : GameKeeper.Console
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>

@@ -1,22 +1,28 @@
-.PHONY: build all clean conf prof
+CABAL=`which cabal-dev`
+
+#
+# Targets
+#
+
+.PHONY: build install conf clean prof
+
+all: build
 
 build:
-	cabal-dev build
-
-all: conf install build
+	$(CABAL) build
 
 install:
-	cabal-dev install
-
-clean:
-	cabal-dev clean
+	$(CABAL) install
 
 conf:
-	cabal-dev configure
+	$(CABAL) configure
+
+clean:
+	$(CABAL) clean
 
 prof: clean
-	cabal-dev configure --enable-executable-profiling
+	$(CABAL) configure --enable-executable-profiling
 	$(MAKE) build
-	cat ../script/prefix.log | ./gamekeeper --service=prof
+	./gamekeeper --service=prof
 
 

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- |
 -- Module      : GameKeeper.Http
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>

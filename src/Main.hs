@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 -- |
 -- Module      : Main
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
@@ -12,8 +10,8 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module Main
-    ( main
+module Main (
+      main
     ) where
 
 import GameKeeper.Connections
