@@ -15,24 +15,25 @@
 module GameKeeper.Sink (
       Metric(..)
     , SinkType(..)
-    , Sink(..)
+    , Sink(push, close)
     , open
     ) where
 
 import Data.Data (Data, Typeable)
 
--- import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8 as BS
 
-data Metric = Metric String String
-    deriving (Show)
+data Metric = Metric BS.ByteString BS.ByteString
+      deriving (Show)
 
 data SinkType = Ganglia | Graphite | Stdout
-    deriving (Data, Typeable, Show)
+      deriving (Data, Typeable, Show)
 
-type Emitter = Metric -> IO ()
+type Writer = Metric -> IO ()
 
 data Sink = Sink
-    { push :: Emitter
+    { push  :: Writer
+    , close :: IO ()
     }
 
 --
@@ -40,9 +41,11 @@ data Sink = Sink
 --
 
 open :: SinkType -> IO Sink
-open Ganglia  = return $ Sink (\(Metric k v) -> print [k, v])
-open Graphite = return $ Sink (\(Metric k v) -> print [k, v])
-open Stdout   = return $ Sink (\(Metric k v) -> print [k, v])
+open _ = return $ Sink (\(Metric k v) -> print [k, v]) (return ())
+
+-- open Ganglia  =
+-- open Graphite = return $ Sink (\(Metric k v) -> print [k, v])
+-- open Stdout   = return $ Sink (\(Metric k v) -> print [k, v])
 
 --
 -- Private
