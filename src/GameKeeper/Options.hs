@@ -24,7 +24,7 @@ import GameKeeper.Sink
 data Options =
       PushStatistics
         { optUri :: String
-        , optSink :: SinkType
+        , optSink :: SinkOptions
         }
     | CleanConnections
         { optUri  :: String
@@ -80,9 +80,9 @@ pushStatistics = PushStatistics
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
         &= explicit
-    , optSink = Stdout
+    , optSink = SinkOptions Stdout "localhost" "5678"
         &= name "sink"
-        &= typ  "SINK"
+        &= typ  "SINK,HOST,PORT"
         &= help "The sink to write metrics to (default: stdout)"
         &= explicit
     } &= name "push-statistics"

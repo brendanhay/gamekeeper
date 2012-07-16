@@ -35,7 +35,7 @@ main = do
 
 runMode :: Options -> IO ()
 runMode PushStatistics{..}   = do
-    sink <- open optSink
+    sink <- mkSink optSink
     push sink $ Metric "something" "1"
     close sink
 runMode CleanConnections{..} = do
