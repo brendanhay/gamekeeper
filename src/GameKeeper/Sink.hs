@@ -21,6 +21,7 @@ module GameKeeper.Sink (
     ) where
 
 import Data.Data (Data, Typeable)
+import Network.Metrics
 
 import qualified Data.ByteString.Char8    as BS
 import qualified Network.Metrics.Ganglia  as Ganglia
@@ -57,10 +58,6 @@ mkSink opts@SinkOptions{..} = fn opts
         Statsd   -> stdoutSink
         Stdout   -> stdoutSink
 
--- open Graphite = return $ Sink (\(Metric k v) -> print [k, v]) (return ())
--- open Statsd   = return $ Sink (\(Metric k v) -> print [k, v]) (return ())
--- open Stdout   = return $ Sink (\(Metric k v) -> print [k, v]) (return ())
-
 --
 -- Private
 --
@@ -71,7 +68,7 @@ gangliaSink SinkOptions{..} = do
     return $ Sink (push handle) (Ganglia.close handle)
   where
     conv (Metric k v) = Ganglia.defaultMetric { Ganglia.name = k, Ganglia.value = v }
-    push hd m         = Ganglia.emit (conv m) hd >> return ()
+    push hd m         = Ganglia.emit (conv m) hd
 
 graphiteSink :: SinkOptions -> IO Sink
 graphiteSink SinkOptions{..} = do
@@ -79,7 +76,14 @@ graphiteSink SinkOptions{..} = do
     return $ Sink (push handle) (Graphite.close handle)
   where
     conv (Metric k v) = Graphite.Metric k v
-    push hd m         = Graphite.emit (conv m) hd >> return ()
+    push hd m         = Graphite.emit (conv m) hd
+
+statsdSink :: SinkOptions -> IO Sink
+statsdSink SinkOptions{..} =
+    Statsd.open sinkHost sinkPort >>= \h -> return $ Sink (push h) (Statsd.close h)
+  where
+    conv (Metric k v) = Statsd.Metric Statsd.Counter k v 1.0
+    push hd m         = Statsd.emit (conv m) hd
 
 stdoutSink :: SinkOptions -> IO Sink
 stdoutSink _ = return $ Sink (\(Metric k v) -> print [k, v]) (return ())
