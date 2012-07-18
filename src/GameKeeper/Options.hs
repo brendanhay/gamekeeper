@@ -19,7 +19,7 @@ import Control.Monad          (when)
 import System.Console.CmdArgs
 import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
-import GameKeeper.Sink
+import GameKeeper.Metrics
 
 data Options =
       PushStatistics
