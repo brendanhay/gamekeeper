@@ -36,7 +36,7 @@ main = do
 runMode :: Options -> IO ()
 runMode PushStatistics{..}   = do
     sink <- open optSink
-    push (Metric Gauge "group" "bucket" "value") sink
+    push sink (Gauge "group" "bucket" (1 :: Int))
     close sink
 runMode CleanConnections{..} = do
     resp <- stale optUri optDays

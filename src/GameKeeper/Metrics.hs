@@ -15,12 +15,11 @@ module GameKeeper.Metrics (
       SinkOptions(..)
 
     -- * Sink Functions
-    , M.MetricSink(push, close)
+    , M.Sink(push, close)
     , open
 
     -- * Re-exports
     , M.SinkType(..)
-    , M.MetricType(..)
     , M.Metric(..)
     ) where
 
@@ -38,7 +37,7 @@ data SinkOptions = SinkOptions
 -- API
 --
 
-open :: SinkOptions -> IO M.Sink
+open :: SinkOptions -> IO M.MetricSink
 open SinkOptions{..} = M.open sinkType sinkHost sinkPort
 
 --
