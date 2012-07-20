@@ -53,7 +53,6 @@ instance FromJSON POSIXTime where
 list :: String -> IO [Connection]
 list uri = do
     body <- getBody $ concat [uri, "api/connections", qs]
-    print body
     return $ case (decode' body :: Maybe (Vector Connection)) of
         Just v  -> toList v
         Nothing -> []
