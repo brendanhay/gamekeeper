@@ -18,22 +18,20 @@ module GameKeeper.API.Connection (
   , idle
   ) where
 
-import Prelude hiding        (product)
 import Control.Applicative   ((<$>), (<*>), empty)
 import Control.Monad         (liftM)
 import Data.Aeson            (decode')
 import Data.Aeson.Types
-import Data.Data
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.Vector           (Vector, toList)
 import GameKeeper.Http
 
 data Connection = Connection
-    { name      :: String
-    , user      :: String
-    , last_recv :: POSIXTime
-    , last_send :: POSIXTime
-    } deriving (Show, Data, Typeable)
+    { name     :: String
+    , user     :: String
+    , received :: POSIXTime
+    , sent     :: POSIXTime
+    } deriving (Show)
 
 instance FromJSON Connection where
     parseJSON (Object o) = Connection
@@ -62,14 +60,14 @@ list uri = do
 idle :: String -> Integer -> IO [Connection]
 idle uri days = do
     time <- getPOSIXTime
-    list uri >>= return . filter (stale days time)
+    liftM (filter (stale days time)) (list uri)
 
 --
 -- Private
 --
 
 stale :: Integer -> POSIXTime -> Connection -> Bool
-stale days time Connection{..} = and $ map diff [last_recv, last_send]
+stale days time Connection{..} = all diff [received, sent]
   where
     diff n = time >= n + 86400 * fromIntegral days
 

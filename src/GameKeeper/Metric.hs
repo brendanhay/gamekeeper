@@ -1,5 +1,5 @@
 -- |
--- Module      : GameKeeper.Metrics
+-- Module      : GameKeeper.Metric
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -10,22 +10,23 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module GameKeeper.Metrics (
+module GameKeeper.Metric (
     -- * Exported Types
       SinkOptions(..)
 
     -- * Sink Functions
-    , M.Sink(push, close)
+    , M.Sink(push, mpush, close)
     , open
 
     -- * Re-exports
     , M.SinkType(..)
     , M.Metric(..)
+    , M.Encodable
     ) where
 
 import Data.Data (Data, Typeable)
 
-import qualified Network.Metrics as M
+import qualified Network.Metric as M
 
 data SinkOptions = SinkOptions
     { sinkType :: M.SinkType

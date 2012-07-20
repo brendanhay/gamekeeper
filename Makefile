@@ -5,11 +5,11 @@ METRICS=../network-metrics
 # Targets
 #
 
-.PHONY: build install deps conf clean prof
+.PHONY: install build deps conf clean prof
 
 all: build
 
-build: deps
+build:
 	$(CABAL) build
 
 install: deps
@@ -27,7 +27,7 @@ clean:
 
 prof: clean
 	$(CABAL) configure --enable-executable-profiling
-	$(MAKE) build
+	$(MAKE) install
 	./gamekeeper --service=prof
 
 

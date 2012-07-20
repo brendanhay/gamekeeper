@@ -14,10 +14,12 @@ module Main (
       main
     ) where
 
-import GameKeeper.API.Connection
-import GameKeeper.Console         (displayInfo)
+import GameKeeper.Console (displayInfo)
 import GameKeeper.Options
-import GameKeeper.Metrics
+import GameKeeper.Metric
+
+import qualified GameKeeper.API.Connection as C
+import qualified GameKeeper.API.Queue      as Q
 
 --
 -- API
@@ -34,10 +36,10 @@ main = do
 --
 
 runMode :: Options -> IO ()
-runMode PushStatistics{..}   = do
+runMode PushStatistics{..} = do
     sink <- open optSink
-    push sink (Gauge "group" "bucket" (1 :: Int))
+    Q.stats optUri sink
     close sink
 runMode CleanConnections{..} = do
-    body <- idle optUri
+    body <- C.idle optUri optDays
     displayInfo "Response" $ show body
