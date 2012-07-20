@@ -14,7 +14,7 @@ module Main (
       main
     ) where
 
-import GameKeeper.Connections
+import GameKeeper.Api.Connections
 import GameKeeper.Console     (displayInfo)
 import GameKeeper.Options
 import GameKeeper.Metrics

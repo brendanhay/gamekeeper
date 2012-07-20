@@ -17,16 +17,16 @@ module GameKeeper.Api (
     , counts
     ) where
 
-import GHC.Generics  (Generic)
-import Control.Monad (mzero)
+import GHC.Generics    (Generic)
+import Control.Monad   (mzero)
 import Data.Data
-import Data.Char     (toLower)
-import Data.Maybe    (fromJust)
-import Data.Aeson    (FromJSON, decode')
+import Data.Char       (toLower)
+import Data.Maybe      (fromJust)
+import Data.Aeson      (FromJSON, decode')
 import Data.Aeson.Types
-import Data.List     (concat, intersperse, intercalate)
-import GameKeeper.Uri   (Uri, Param, getEnvUri, join)
-import GameKeeper.Http  (getBody)
+import Data.List       (concat, intersperse, intercalate)
+import GameKeeper.Uri  (Uri, Param, getEnvUri, join)
+import GameKeeper.Http (getBody)
 
 import qualified Data.Vector          as V
 import qualified Data.ByteString.Lazy as L

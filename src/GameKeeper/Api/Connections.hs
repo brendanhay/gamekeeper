@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- |
--- Module      : GameKeeper.Connections
+-- Module      : GameKeeper.Api.Connections
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -12,7 +12,7 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module GameKeeper.Connections (
+module GameKeeper.Api.Connections (
     Connection
   , connections
   , stale
@@ -24,29 +24,26 @@ import Control.Monad         (liftM, filterM)
 import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Data
-import Data.Time.Clock
-import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.Vector           (Vector, toList)
 import GameKeeper.Http
 
 data Connection = Connection
     { name      :: String
     , user      :: String
-    , client    :: Maybe String
-    , last_recv :: NominalDiffTime
-    , last_send :: NominalDiffTime
+    , last_recv :: POSIXTime
+    , last_send :: POSIXTime
     } deriving (Show, Data, Typeable)
 
 instance FromJSON Connection where
-    parseJSON (Object v) = Connection <$>
-        v .: "name" <*>
-        v .: "user" <*>
-        ((v .: "client_properties") >>= (.:? "product")) <*>
-        ((v .: "recv_oct_details") >>= (.: "last_event")) <*>
-        ((v .: "send_oct_details") >>= (.: "last_event"))
+    parseJSON (Object o) = Connection
+        <$> o .: "name"
+        <*> o .: "user"
+        <*> ((o .: "recv_oct_details") >>= (.: "last_event"))
+        <*> ((o .: "send_oct_details") >>= (.: "last_event"))
     parseJSON _ = empty
 
-instance FromJSON NominalDiffTime where
+instance FromJSON POSIXTime where
     parseJSON json = liftM msToSeconds (parseJSON json)
 
 --
@@ -56,11 +53,12 @@ instance FromJSON NominalDiffTime where
 connections :: String -> IO [Connection]
 connections base = do
     body <- getBody $ concat [base, "api/connections", qs]
+    print body
     return $ case (decode' body :: Maybe (Vector Connection)) of
         Just v  -> toList v
         Nothing -> []
   where
-    qs = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event,client_properties"
+    qs = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
 stale :: String -> Integer -> IO [Connection]
 stale base days = connections base >>= filterM (idle days)
@@ -74,10 +72,7 @@ idle days Connection{..} =
     liftM (check last_recv last_send) getPOSIXTime
   where
     check x y c = diff c x && diff c y
-    diff c n    = c >= addDays n days
+    diff c n    = c >= n + 86400 * fromIntegral days
 
-msToSeconds :: Integer -> NominalDiffTime
-msToSeconds = realToFrac . (/ 1000) . fromIntegral
-
-addDays :: NominalDiffTime -> Integer -> NominalDiffTime
-addDays time days = time + 86400 * fromIntegral days
+msToSeconds :: Integer -> POSIXTime
+msToSeconds = realToFrac . (/ (1000 :: Double)) . fromIntegral
