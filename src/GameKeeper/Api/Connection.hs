@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- |
--- Module      : GameKeeper.Api.Connections
+-- Module      : GameKeeper.Api.Connection
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -12,15 +12,15 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module GameKeeper.Api.Connections (
+module GameKeeper.API.Connection (
     Connection
-  , connections
-  , stale
+  , list
+  , idle
   ) where
 
 import Prelude hiding        (product)
 import Control.Applicative   ((<$>), (<*>), empty)
-import Control.Monad         (liftM, filterM)
+import Control.Monad         (liftM)
 import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Data
@@ -50,9 +50,9 @@ instance FromJSON POSIXTime where
 -- API
 --
 
-connections :: String -> IO [Connection]
-connections base = do
-    body <- getBody $ concat [base, "api/connections", qs]
+list :: String -> IO [Connection]
+list uri = do
+    body <- getBody $ concat [uri, "api/connections", qs]
     print body
     return $ case (decode' body :: Maybe (Vector Connection)) of
         Just v  -> toList v
@@ -60,19 +60,19 @@ connections base = do
   where
     qs = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
-stale :: String -> Integer -> IO [Connection]
-stale base days = connections base >>= filterM (idle days)
+idle :: String -> Integer -> IO [Connection]
+idle uri days = do
+    time <- getPOSIXTime
+    list uri >>= return . filter (stale days time)
 
 --
 -- Private
 --
 
-idle :: Integer -> Connection -> IO Bool
-idle days Connection{..} =
-    liftM (check last_recv last_send) getPOSIXTime
+stale :: Integer -> POSIXTime -> Connection -> Bool
+stale days time Connection{..} = and $ map diff [last_recv, last_send]
   where
-    check x y c = diff c x && diff c y
-    diff c n    = c >= n + 86400 * fromIntegral days
+    diff n = time >= n + 86400 * fromIntegral days
 
 msToSeconds :: Integer -> POSIXTime
 msToSeconds = realToFrac . (/ (1000 :: Double)) . fromIntegral
