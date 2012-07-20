@@ -15,7 +15,7 @@ module Main (
     ) where
 
 import GameKeeper.API.Connection
-import GameKeeper.Console     (displayInfo)
+import GameKeeper.Console         (displayInfo)
 import GameKeeper.Options
 import GameKeeper.Metrics
 
@@ -39,5 +39,5 @@ runMode PushStatistics{..}   = do
     push sink (Gauge "group" "bucket" (1 :: Int))
     close sink
 runMode CleanConnections{..} = do
-    resp <- list optUri
-    displayInfo "Response" $ show resp
+    body <- idle optUri
+    displayInfo "Response" $ show body
