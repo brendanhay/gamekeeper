@@ -16,10 +16,12 @@ module GameKeeper.Http (
 
     -- * Functions
     , parseUri
+    , getList
     , getBody
   ) where
 
 import Data.Maybe                  (fromJust)
+import Data.Vector                 (Vector, toList)
 import Network.HTTP.Conduit hiding (queryString, path)
 import GameKeeper.Console          (displayInfo)
 
@@ -45,12 +47,20 @@ data Uri = Uri
 parseUri :: String -> Uri
 parseUri = conv . U.parseURI
 
+getList :: Uri -> (BL.ByteString -> Maybe (Vector a)) -> IO [a]
+getList uri decode = do
+    body <- getBody uri
+    return $ case decode body of
+        Just v  -> toList v
+        Nothing -> []
+
 getBody :: Uri -> IO BL.ByteString
 getBody uri = do
     displayInfo "GET" $ abspath uri
     withManager $ \manager -> do
         Response _ _ _ body <- httpLbs (request uri) manager
         return body
+
 
 --
 -- Private
