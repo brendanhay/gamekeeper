@@ -19,7 +19,7 @@ import Control.Applicative ((<$>), (<*>), empty)
 import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
-import Data.Vector         (Vector, toList)
+import Data.Vector         (Vector)
 import GameKeeper.Http
 import GameKeeper.Metric
 
@@ -52,13 +52,11 @@ instance Measurable Queue where
 --
 
 list :: Uri -> IO [Queue]
-list uri = do
-    body <- getBody uri { uriPath = "api/queues", uriQuery = qs }
-    return $ case (decode' body :: Maybe (Vector Queue)) of
-        Just v  -> toList v
-        Nothing -> []
+list uri = getList uri { uriPath = path, uriQuery = query } decode
   where
-    qs = "?columns=name,messages,consumers,memory"
+    decode b = decode' b :: Maybe (Vector Queue)
+    path     = "api/queues"
+    query    = "?columns=name,messages,consumers,memory"
 
 --
 -- Private

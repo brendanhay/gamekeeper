@@ -24,7 +24,7 @@ import Control.Monad         (liftM)
 import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
-import Data.Vector           (Vector, toList)
+import Data.Vector           (Vector)
 import Network.Metric
 import GameKeeper.Http
 import GameKeeper.Metric
@@ -57,13 +57,11 @@ instance Measurable [Connection] where
 --
 
 list :: Uri -> IO [Connection]
-list uri = do
-    body <- getBody uri { uriPath = "api/connections", uriQuery = qs }
-    return $ case (decode' body :: Maybe (Vector Connection)) of
-        Just v  -> toList v
-        Nothing -> []
+list uri = getList uri { uriPath = path, uriQuery = query } decode
   where
-    qs = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
+    decode b = decode' b :: Maybe (Vector Connection)
+    path     = "api/connections"
+    query    = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
 idle :: Uri -> Integer -> IO [Connection]
 idle uri days = do
