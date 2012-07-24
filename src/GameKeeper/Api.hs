@@ -67,8 +67,8 @@ data QueueTotals = QueueTotals
 instance FromJSON QueueTotals
 
 data Overview = Overview
-    { message_stats      :: MessageStats
-    , queue_totals       :: QueueTotals
+    { message_stats :: MessageStats
+    , queue_totals  :: QueueTotals
     } deriving (Show, Generic, Data, Typeable)
 
 instance FromJSON Overview

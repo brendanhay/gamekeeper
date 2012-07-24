@@ -11,43 +11,84 @@
 --
 
 module GameKeeper.Http (
-    getBody
+    -- * Exported Types
+      Uri(..)
+
+    -- * Functions
+    , parseUri
+    , getBody
   ) where
 
-import Data.ByteString.Char8        (ByteString, pack)
-import Network.HTTP.Conduit  hiding (queryString, path)
-import Text.Regex                   (matchRegex, mkRegex)
-import GameKeeper.Console           (displayInfo)
+import Data.Maybe                  (fromJust)
+import Network.HTTP.Conduit hiding (queryString, path)
+import GameKeeper.Console          (displayInfo)
 
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy  as BL
+import qualified Network.URI           as U
 
-data Uri = Uri ByteString ByteString String
+data Uri = Uri
+    { uriScheme  :: BS.ByteString
+    , uriHost    :: BS.ByteString
+    , uriPort    :: Int
+    , uriUser    :: BS.ByteString
+    , uriPass    :: BS.ByteString
+    , uriPath    :: BS.ByteString
+    , uriQuery   :: BS.ByteString
+    , uriFrag    :: BS.ByteString
+    } deriving (Show)
 
 --
 -- API
 --
 
-getBody :: String -> IO L.ByteString
+parseUri :: String -> Uri
+parseUri = conv . U.parseURI
+
+getBody :: Uri -> IO BL.ByteString
 getBody uri = do
-    displayInfo "GET" uri
+    displayInfo "GET" $ show uri
     withManager $ \manager -> do
-        Response _ _ _ body <- httpLbs (mkRequest uri) manager
+        Response _ _ _ body <- httpLbs (request uri) manager
         return body
 
 --
 -- Private
 --
 
-mkRequest :: String -> Request m
-mkRequest uri = case parseUrl path of
-    Just req -> applyBasicAuth user pass req
-    Nothing  -> error $ "Invalid Request: " ++ uri
-  where
-    (Uri user pass path) = parseUri uri
+request :: Uri -> Request m
+request uri@Uri{..} = case parseUrl $ abspath uri of
+    Just req -> applyBasicAuth uriUser uriPass req
+    Nothing  -> error $ "Invalid Request: " ++ abspath uri
 
-parseUri :: String -> Uri
-parseUri str = case matchRegex (mkRegex "^(.+://)(.+):(.+)@(.+)$") str of
-        Just [scheme, user, pass, path] ->
-            Uri (pack user) (pack pass) $ scheme ++ path
-        _ ->
-            error $ "Invalid URI: " ++ str
+abspath :: Uri -> String
+abspath Uri{..} = BS.unpack $ BS.concat uri
+  where
+    uri  = [uriScheme, "//", uriHost, ":", port, "/", uriPath, uriQuery, uriFrag]
+    port = BS.pack $ show uriPort
+
+conv :: Maybe U.URI -> Uri
+conv Nothing          = error "Invalid Uri"
+conv (Just U.URI{..}) = Uri
+    { uriScheme  = BS.pack uriScheme
+    , uriHost    = BS.pack $ U.uriRegName auth
+    , uriPort    = read port :: Int
+    , uriUser    = BS.pack user
+    , uriPass    = BS.pack $ trim ':' pass
+    , uriPath    = BS.pack uriPath
+    , uriQuery   = BS.pack uriQuery
+    , uriFrag    = BS.pack uriFragment
+    }
+  where
+    auth         = fromJust uriAuthority
+    [user, pass] = split '@' $ U.uriUserInfo auth
+    port         = trim ':' $ U.uriPort auth
+
+split :: Char -> String -> [String]
+split delim s | [] <- rest = [token]
+              | otherwise  = token : split delim (tail rest)
+  where
+    (token, rest) = span (/= delim) s
+
+trim :: Char -> String -> String
+trim = dropWhile . (==)

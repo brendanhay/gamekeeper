@@ -48,16 +48,16 @@ instance FromJSON POSIXTime where
 -- API
 --
 
-list :: String -> IO [Connection]
+list :: Uri -> IO [Connection]
 list uri = do
-    body <- getBody $ concat [uri, "api/connections", qs]
+    body <- getBody uri { uriPath = "api/connections", uriQuery = qs }
     return $ case (decode' body :: Maybe (Vector Connection)) of
         Just v  -> toList v
         Nothing -> []
   where
     qs = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
-idle :: String -> Integer -> IO [Connection]
+idle :: Uri -> Integer -> IO [Connection]
 idle uri days = do
     time <- getPOSIXTime
     liftM (filter (stale days time)) (list uri)

@@ -18,6 +18,7 @@ install: deps
 deps:
 	$(MAKE) -C $(METRICS)
 	$(CABAL) add-source $(METRICS)
+	$(CABAL) install network-metrics --reinstall
 
 conf:
 	$(CABAL) configure

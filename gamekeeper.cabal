@@ -35,7 +35,7 @@ executable gamekeeper
                   , RecordWildCards
                   , TypeSynonymInstances
 
-  ghc-options:      -Wall -O -threaded -rtsopts
+  ghc-options:      -Wall -rtsopts
   ghc-prof-options: -prof -fprof-auto -auto-all -with-rtsopts=-p
 
   build-depends:    base >= 4.3 && < 5

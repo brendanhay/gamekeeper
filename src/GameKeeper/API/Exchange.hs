@@ -1,5 +1,5 @@
 -- |
--- Module      : GameKeeper.API.Queue
+-- Module      : GameKeeper.API.Exchange
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -10,40 +10,42 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module GameKeeper.API.Queue (
-    Queue
+module GameKeeper.API.Exchange (
+    Exchange
   , list
+  , metrics
   ) where
 
+import Control.Monad.IO.Class
 import Control.Applicative ((<$>), (<*>), empty)
-import Control.Monad       (liftM)
+import Control.Monad       (liftM, void)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
 import Data.Vector         (Vector, toList)
-import Network.Metric
 import GameKeeper.Http
+import Network.Metric
 
 import GameKeeper.Metric as M
 
 import qualified Data.ByteString.Char8 as BS
 
-data Queue = Queue
+data Exchange = Exchange
     { name      :: BS.ByteString
     , messages  :: Integer
     , consumers :: Integer
     , memory    :: Double
     } deriving (Show)
 
-instance FromJSON Queue where
-    parseJSON (Object o) = Queue
+instance FromJSON Exchange where
+    parseJSON (Object o) = Exchange
         <$> o .: "name"
         <*> o .: "messages"
         <*> o .: "consumers"
         <*> liftM megabytes (o .: "memory")
     parseJSON _ = empty
 
-instance Measurable Queue where
-    measure Queue{..} =
+instance Measurable Exchange where
+    measure Exchange{..} =
         [ gauge group name "messages" (fromIntegral messages)
         , gauge group name "consumers" (fromIntegral consumers)
         , gauge group name "memory" memory
@@ -53,10 +55,10 @@ instance Measurable Queue where
 -- API
 --
 
-list :: Uri -> IO [Queue]
+list :: String -> IO [Exchange]
 list uri = do
-    body <- getBody uri { uriPath = "api/queues", uriQuery = qs }
-    return $ case (decode' body :: Maybe (Vector Queue)) of
+    body <- getBody $ concat [uri, "api/queues", qs]
+    return $ case (decode' body :: Maybe (Vector Exchange)) of
         Just v  -> toList v
         Nothing -> []
   where

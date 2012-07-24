@@ -15,8 +15,9 @@ module Main (
     ) where
 
 import GameKeeper.Console (displayInfo)
-import GameKeeper.Options
+import GameKeeper.Http    (parseUri)
 import GameKeeper.Metric
+import GameKeeper.Options
 
 import qualified GameKeeper.API.Connection as C
 import qualified GameKeeper.API.Queue      as Q
@@ -38,8 +39,8 @@ main = do
 runMode :: Options -> IO ()
 runMode PushStatistics{..} = do
     sink <- open optSink
-    Q.stats optUri sink
+    Q.list (parseUri optUri) >>= emit sink
     close sink
 runMode CleanConnections{..} = do
-    body <- C.idle optUri optDays
+    body <- C.idle (parseUri optUri) optDays
     displayInfo "Response" $ show body
