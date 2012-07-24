@@ -39,7 +39,6 @@ instance FromJSON Exchange where
                case stats of
                    Just x  -> (x .: "publish_details") >>= (.: "rate")
                    Nothing -> return 0
-
     parseJSON _ = empty
 
 instance Measurable Exchange where
