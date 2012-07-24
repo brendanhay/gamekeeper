@@ -37,8 +37,6 @@ data MessageDetails = MessageDetails
     , last_event :: Integer
     } deriving (Show, Generic, Data, Typeable)
 
-instance FromJSON MessageDetails
-
 data MessageStats = MessageStats
     { confirm                :: Integer
     , confirm_details        :: MessageDetails

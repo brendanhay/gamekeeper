@@ -47,7 +47,7 @@ parseUri = conv . U.parseURI
 
 getBody :: Uri -> IO BL.ByteString
 getBody uri = do
-    displayInfo "GET" $ show uri
+    displayInfo "GET" $ abspath uri
     withManager $ \manager -> do
         Response _ _ _ body <- httpLbs (request uri) manager
         return body
@@ -93,4 +93,4 @@ split delim s | [] <- rest = [token]
 trim :: Char -> String -> String
 trim delim = f . f
   where
-    f = reverse . dropWhile (== delim)  
+    f = reverse . dropWhile (== delim)

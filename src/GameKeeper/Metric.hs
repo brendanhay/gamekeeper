@@ -56,7 +56,7 @@ group :: M.Group
 group = "rabbit"
 
 bucket :: M.Bucket -> M.Bucket -> M.Bucket
-bucket prefix suffix = BS.intercalate "." [prefix, suffix]
+bucket a b = BS.intercalate "." [a, b]
 
 --
 -- Private

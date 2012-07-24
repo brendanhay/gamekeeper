@@ -13,7 +13,6 @@
 module GameKeeper.API.Exchange (
     Exchange
   , list
-  , metrics
   ) where
 
 import Control.Monad.IO.Class
@@ -29,40 +28,73 @@ import GameKeeper.Metric as M
 
 import qualified Data.ByteString.Char8 as BS
 
+-- {
+--     "message_stats_out":{
+--         "publish":22304588,
+--         "publish_details":{
+--             "rate":572.0028101433729,
+--             "interval":5693001,
+--             "last_event":1343132939016
+--         }
+--     },
+--     "message_stats_in":{
+--         "publish":22304588,
+--         "publish_details":{
+--             "rate":572.0028101433729,
+--             "interval":5693001,
+--             "last_event":1343132939016
+--         }
+--     },
+--     "name":"activities.propagate",
+--     "vhost":"/",
+--     "type":"topic",
+--     "durable":true,
+--     "auto_delete":false,
+--     "internal":false,
+--     "arguments":{
+--     }
+-- }
+
 data Exchange = Exchange
-    { name      :: BS.ByteString
-    , messages  :: Integer
-    , consumers :: Integer
-    , memory    :: Double
+    { name :: BS.ByteString
+    , rate :: Maybe Double
     } deriving (Show)
 
 instance FromJSON Exchange where
     parseJSON (Object o) = Exchange
         <$> o .: "name"
-        <*> o .: "messages"
-        <*> o .: "consumers"
-        <*> liftM megabytes (o .: "memory")
+        -- <*> ((o .:? "message_stats_in") >>= (.: "publish_details") >>= (.: "rate"))
+
+        -- <*> do stats <- o .:? "message_stats_in"
+        --        return $ do
+        --            foo <- stats
+        --            ((foo .: "publish_details") >>= (.: "rate"))
+
+        <*> do stats <- o .:? "message_stats_in"
+               case stats of
+                   Just v -> ((v .: "publish_details") >>= (.: "rate"))
+                   Nothing -> return Nothing
+
     parseJSON _ = empty
 
 instance Measurable Exchange where
-    measure Exchange{..} =
-        [ gauge group name "messages" (fromIntegral messages)
-        , gauge group name "consumers" (fromIntegral consumers)
-        , gauge group name "memory" memory
-        ]
+    measure Exchange{..} = [Gauge group (bucket "exchange.rate" name) (val rate)]
+       where
+         val (Just n) = n
+         val Nothing  = 0
 
 --
 -- API
 --
 
-list :: String -> IO [Exchange]
+list :: Uri -> IO [Exchange]
 list uri = do
-    body <- getBody $ concat [uri, "api/queues", qs]
+    body <- getBody uri { uriPath = "api/exchanges", uriQuery = qs }
     return $ case (decode' body :: Maybe (Vector Exchange)) of
         Just v  -> toList v
         Nothing -> []
   where
-    qs = "?columns=name,messages,consumers,memory"
+    qs = "?columns=name,message_stats_in.publish_details.rate"
 
 --
 -- Private
