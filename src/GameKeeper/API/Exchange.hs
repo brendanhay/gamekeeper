@@ -33,11 +33,11 @@ data Exchange = Exchange
 
 instance FromJSON Exchange where
     parseJSON (Object o) = Exchange
-        <$> do n <- o .: "name"
-               return $ if BS.null n then "default" else n
-        <*> do m <- o .:? "message_stats_in"
-               case m of
-                   Just v  -> (v .: "publish_details") >>= (.: "rate")
+        <$> do name  <- o .: "name"
+               return $ if BS.null name then "default" else name
+        <*> do stats <- o .:? "message_stats_in"
+               case stats of
+                   Just x  -> (x .: "publish_details") >>= (.: "rate")
                    Nothing -> return 0
 
     parseJSON _ = empty
