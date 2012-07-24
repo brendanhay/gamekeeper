@@ -56,10 +56,9 @@ instance Measurable [Connection] where
 --
 
 list :: Uri -> IO [Connection]
-list uri = getList uri { uriPath = path, uriQuery = query } decode
+list uri = getList uri "api/connections" query decode
   where
     decode b = decode' b :: Maybe (Vector Connection)
-    path     = "api/connections"
     query    = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
 idle :: Uri -> Integer -> IO [Connection]

@@ -49,8 +49,7 @@ instance Measurable Exchange where
 --
 
 list :: Uri -> IO [Exchange]
-list uri = getList uri { uriPath = path, uriQuery = query } decode
+list uri = getList uri "api/exchanges" query decode
   where
     decode b = decode' b :: Maybe (Vector Exchange)
-    path     = "api/exchanges"
     query    = "?columns=name,message_stats_in.publish_details.rate"

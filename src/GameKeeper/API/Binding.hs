@@ -15,8 +15,7 @@ module GameKeeper.API.Binding (
   , list
   ) where
 
-import Control.Applicative   ((<$>), (<*>), empty)
-import Control.Monad         (liftM)
+import Control.Applicative   (empty)
 import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Vector           (Vector)
@@ -27,7 +26,7 @@ import GameKeeper.Metric
 data Binding = Binding deriving (Show)
 
 instance FromJSON Binding where
-    parseJSON (Object o) = return Binding
+    parseJSON (Object _) = return Binding
     parseJSON _          = empty
 
 instance Measurable [Binding] where
@@ -40,8 +39,6 @@ instance Measurable [Binding] where
 --
 
 list :: Uri -> IO [Binding]
-list uri = getList uri { uriPath = path, uriQuery = query } decode
+list uri = getList uri "api/bindings" "?columns=" decode
   where
     decode b = decode' b :: Maybe (Vector Binding)
-    path     = "api/bindings"
-    query    = "?columns="

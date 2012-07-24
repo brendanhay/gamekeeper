@@ -47,9 +47,13 @@ data Uri = Uri
 parseUri :: String -> Uri
 parseUri = conv . U.parseURI
 
-getList :: Uri -> (BL.ByteString -> Maybe (Vector a)) -> IO [a]
-getList uri decode = do
-    body <- getBody uri
+getList :: Uri
+        -> BS.ByteString
+        -> BS.ByteString
+        -> (BL.ByteString -> Maybe (Vector a))
+        -> IO [a]
+getList uri path query decode = do
+    body <- getBody uri { uriPath = path, uriQuery = query }
     return $ case decode body of
         Just v  -> toList v
         Nothing -> []

@@ -52,11 +52,9 @@ instance Measurable Queue where
 --
 
 list :: Uri -> IO [Queue]
-list uri = getList uri { uriPath = path, uriQuery = query } decode
+list uri = getList uri "api/queues" "?columns=name,messages,consumers,memory" decode
   where
     decode b = decode' b :: Maybe (Vector Queue)
-    path     = "api/queues"
-    query    = "?columns=name,messages,consumers,memory"
 
 --
 -- Private
