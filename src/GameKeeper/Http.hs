@@ -74,14 +74,14 @@ conv (Just U.URI{..}) = Uri
     , uriHost    = BS.pack $ U.uriRegName auth
     , uriPort    = read port :: Int
     , uriUser    = BS.pack user
-    , uriPass    = BS.pack $ trim ':' pass
+    , uriPass    = BS.pack $ trim '@' pass
     , uriPath    = BS.pack uriPath
     , uriQuery   = BS.pack uriQuery
     , uriFrag    = BS.pack uriFragment
     }
   where
     auth         = fromJust uriAuthority
-    [user, pass] = split '@' $ U.uriUserInfo auth
+    [user, pass] = split ':' $ U.uriUserInfo auth
     port         = trim ':' $ U.uriPort auth
 
 split :: Char -> String -> [String]
@@ -91,4 +91,6 @@ split delim s | [] <- rest = [token]
     (token, rest) = span (/= delim) s
 
 trim :: Char -> String -> String
-trim = dropWhile . (==)
+trim delim = f . f
+  where
+    f = reverse . dropWhile (== delim)  

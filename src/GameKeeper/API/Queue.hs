@@ -20,10 +20,8 @@ import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
 import Data.Vector         (Vector, toList)
-import Network.Metric
 import GameKeeper.Http
-
-import GameKeeper.Metric as M
+import GameKeeper.Metric
 
 import qualified Data.ByteString.Char8 as BS
 
@@ -44,9 +42,9 @@ instance FromJSON Queue where
 
 instance Measurable Queue where
     measure Queue{..} =
-        [ gauge group name "messages" (fromIntegral messages)
-        , gauge group name "consumers" (fromIntegral consumers)
-        , gauge group name "memory" memory
+        [ Gauge group (bucket "messages" name) (fromIntegral messages)
+        , Gauge group (bucket "consumers" name) (fromIntegral consumers)
+        , Gauge group (bucket "memory" name) memory
         ]
 
 --

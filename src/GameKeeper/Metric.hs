@@ -21,24 +21,22 @@ module GameKeeper.Metric (
 
     -- * Functions
     , group
-    , emit
+    , bucket
 
     -- * Re-exports
     , M.SinkType(..)
     , M.Metric(..)
-    , M.Measurable
-    , M.Encodable
+    , M.Measurable(..)
+    , M.Encodable(..)
     , M.Sink(..)
-    , M.counter
-    , M.timer
-    , M.gauge
     ) where
 
 import Data.Data       (Data, Typeable)
 import Data.Word       (Word16)
 import Network.Socket
 
-import qualified Network.Metric as M
+import qualified Data.ByteString as BS
+import qualified Network.Metric  as M
 
 data SinkOptions = SinkOptions
     { sinkType :: M.SinkType
@@ -57,8 +55,8 @@ open SinkOptions{..} = M.open sinkType "localhost" sinkHost port
 group :: M.Group
 group = "rabbit"
 
-emit :: (M.Sink a, M.Measurable b) => a -> [b] -> IO ()
-emit sink = mapM_ (M.push sink)
+bucket :: M.Bucket -> M.Bucket -> M.Bucket
+bucket prefix suffix = BS.intercalate "." [prefix, suffix]
 
 --
 -- Private

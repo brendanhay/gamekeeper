@@ -39,8 +39,16 @@ main = do
 runMode :: Options -> IO ()
 runMode PushStatistics{..} = do
     sink <- open optSink
-    Q.list (parseUri optUri) >>= emit sink
+
+    putStrLn "Connection Metrics:"
+    C.list uri >>= push sink
+
+    putStrLn "Queue Metrics:"
+    Q.list uri >>= mapM_ (push sink)
+
     close sink
+  where
+    uri = parseUri optUri
 runMode CleanConnections{..} = do
     body <- C.idle (parseUri optUri) optDays
     displayInfo "Response" $ show body

@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 -- |
 -- Module      : GameKeeper.API.Connection
@@ -24,7 +25,9 @@ import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.Vector           (Vector, toList)
+import Network.Metric
 import GameKeeper.Http
+import GameKeeper.Metric
 
 data Connection = Connection
     { name     :: String
@@ -43,6 +46,11 @@ instance FromJSON Connection where
 
 instance FromJSON POSIXTime where
     parseJSON json = liftM msToSeconds (parseJSON json)
+
+instance Measurable [Connection] where
+    measure xs = [Gauge group "connections" len]
+      where
+        len = fromIntegral $ length xs :: Double
 
 --
 -- API
