@@ -37,7 +37,7 @@ instance FromJSON Exchange where
                return $ if BS.null name then "default" else name
         <*> do stats <- o .:? "message_stats_in"
                case stats of
-                   Just x  -> (x .: "publish_details") >>= (.: "rate")
+                   Just v  -> (v .: "publish_details") >>= (.: "rate")
                    Nothing -> return 0
     parseJSON _ = empty
 

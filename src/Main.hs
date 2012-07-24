@@ -21,6 +21,7 @@ import GameKeeper.Options
 
 import qualified GameKeeper.API.Connection as C
 import qualified GameKeeper.API.Exchange   as E
+import qualified GameKeeper.API.Binding    as B
 import qualified GameKeeper.API.Queue      as Q
 
 --
@@ -46,6 +47,9 @@ runMode PushStatistics{..} = do
 
     putStrLn "Exchange Metrics:"
     E.list uri >>= mapM_ (push sink)
+
+    putStrLn "Binding Metrics:"
+    B.list uri >>= push sink
 
     putStrLn "Queue Metrics:"
     Q.list uri >>= mapM_ (push sink)

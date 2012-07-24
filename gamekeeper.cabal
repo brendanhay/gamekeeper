@@ -34,6 +34,7 @@ executable gamekeeper
                   , DeriveDataTypeable
                   , RecordWildCards
                   , TypeSynonymInstances
+                  , FlexibleInstances
 
   ghc-options:      -Wall -rtsopts
   ghc-prof-options: -prof -fprof-auto -auto-all -with-rtsopts=-p

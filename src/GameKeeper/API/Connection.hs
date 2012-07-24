@@ -1,5 +1,4 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 -- |
 -- Module      : GameKeeper.API.Connection
