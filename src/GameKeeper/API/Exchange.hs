@@ -57,31 +57,21 @@ import qualified Data.ByteString.Char8 as BS
 
 data Exchange = Exchange
     { name :: BS.ByteString
-    , rate :: Maybe Double
+    , rate :: Double
     } deriving (Show)
 
 instance FromJSON Exchange where
     parseJSON (Object o) = Exchange
         <$> o .: "name"
-        -- <*> ((o .:? "message_stats_in") >>= (.: "publish_details") >>= (.: "rate"))
-
-        -- <*> do stats <- o .:? "message_stats_in"
-        --        return $ do
-        --            foo <- stats
-        --            ((foo .: "publish_details") >>= (.: "rate"))
-
-        <*> do stats <- o .:? "message_stats_in"
-               case stats of
-                   Just v -> ((v .: "publish_details") >>= (.: "rate"))
-                   Nothing -> return Nothing
+        <*> do m <- o .:? "message_stats_in"
+               case m of
+                   Just v  -> ((v .: "publish_details") >>= (.: "rate"))
+                   Nothing -> return 0
 
     parseJSON _ = empty
 
 instance Measurable Exchange where
-    measure Exchange{..} = [Gauge group (bucket "exchange.rate" name) (val rate)]
-       where
-         val (Just n) = n
-         val Nothing  = 0
+    measure Exchange{..} = [Gauge group (bucket "exchange.rate" name) rate]
 
 --
 -- API
