@@ -43,16 +43,17 @@ runMode PushStatistics{..} = do
     sink <- open optSink
 
     putStrLn "Connection Metrics:"
-    C.list uri >>= push sink
+    C.list uri >>= print
+    -- C.list uri >>= push sink
 
-    putStrLn "Exchange Metrics:"
-    E.list uri >>= mapM_ (push sink)
+    -- putStrLn "Exchange Metrics:"
+    -- E.list uri >>= mapM_ (push sink)
 
-    putStrLn "Binding Metrics:"
-    B.list uri >>= push sink
+    -- putStrLn "Binding Metrics:"
+    -- B.list uri >>= push sink
 
-    putStrLn "Queue Metrics:"
-    Q.list uri >>= mapM_ (push sink)
+    -- putStrLn "Queue Metrics:"
+    -- Q.list uri >>= mapM_ (push sink)
 
     close sink
   where

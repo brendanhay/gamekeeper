@@ -28,19 +28,26 @@ import Network.Metric
 import GameKeeper.Http
 import GameKeeper.Metric
 
+import qualified Data.ByteString.Char8 as BS
+
 data Connection = Connection
-    { name     :: String
-    , user     :: String
-    , received :: POSIXTime
-    , sent     :: POSIXTime
+    { name     :: BS.ByteString
+    , user     :: BS.ByteString
+    , received :: Maybe POSIXTime
+    , sent     :: Maybe POSIXTime
     } deriving (Show)
 
 instance FromJSON Connection where
     parseJSON (Object o) = Connection
         <$> o .: "name"
         <*> o .: "user"
-        <*> ((o .: "recv_oct_details") >>= (.: "last_event"))
-        <*> ((o .: "send_oct_details") >>= (.: "last_event"))
+        <*> event "send_oct_details"
+        <*> event "recv_oct_details"
+      where
+        event k = do
+            d <- o .:? k
+            return $ d >>= parseMaybe (.: "last_event")
+
     parseJSON _ = empty
 
 instance FromJSON POSIXTime where
@@ -62,18 +69,18 @@ list uri = getList uri "api/connections" query decode
     query    = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
 idle :: Uri -> Integer -> IO [Connection]
-idle uri days = do
-    time <- getPOSIXTime
-    liftM (filter (stale days time)) (list uri)
+idle uri days = list uri
+    -- time <- getPOSIXTime
+    -- liftM (filter (stale days time)) (list uri)
 
 --
 -- Private
 --
 
-stale :: Integer -> POSIXTime -> Connection -> Bool
-stale days time Connection{..} = all diff [received, sent]
-  where
-    diff n = time >= n + 86400 * fromIntegral days
+-- stale :: Integer -> POSIXTime -> Connection -> Bool
+-- stale days time Connection{..} = all diff [received, sent]
+--   where
+--     diff n = time >= n + 86400 * fromIntegral days
 
 msToSeconds :: Integer -> POSIXTime
 msToSeconds = realToFrac . (/ (1000 :: Double)) . fromIntegral

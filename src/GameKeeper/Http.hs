@@ -54,6 +54,7 @@ getList :: Uri
         -> IO [a]
 getList uri path query decode = do
     body <- getBody uri { uriPath = path, uriQuery = query }
+    displayInfo "Response" $ show (BL.length body) ++ " chars"
     return $ case decode body of
         Just v  -> toList v
         Nothing -> []
@@ -64,7 +65,6 @@ getBody uri = do
     withManager $ \manager -> do
         Response _ _ _ body <- httpLbs (request uri) manager
         return body
-
 
 --
 -- Private

@@ -26,6 +26,7 @@ import GameKeeper.Metric
 data Binding = Binding deriving (Show)
 
 instance FromJSON Binding where
+    parseJSON (Array _)  = return Binding
     parseJSON (Object _) = return Binding
     parseJSON _          = empty
 
