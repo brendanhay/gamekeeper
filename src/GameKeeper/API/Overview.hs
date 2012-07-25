@@ -15,16 +15,13 @@ module GameKeeper.API.Overview (
   , show
   ) where
 
-import Prelude hiding (show)
+import Prelude             hiding (show)
 import Control.Applicative ((<$>), (<*>), empty)
-import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
 import Data.Maybe          (fromMaybe, fromJust)
-import Data.Vector         (Vector, toList)
 import GameKeeper.Http
 import GameKeeper.Metric
-import GameKeeper.Console
 
 data Count = Count
     { total   :: Double

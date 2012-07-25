@@ -44,20 +44,20 @@ mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
 
-    -- putStrLn "Connection Metrics:"
-    -- C.list uri >>= C.idle optDays >>= push sink
+    putStrLn "Connection Metrics:"
+    C.list uri >>= C.idle optDays >>= push sink
 
-    -- putStrLn "Channel Metrics:"
-    -- CH.list uri >>= push sink
+    putStrLn "Channel Metrics:"
+    CH.list uri >>= push sink
 
-    -- putStrLn "Exchange Metrics:"
-    -- E.list uri >>= mapM_ (push sink)
+    putStrLn "Exchange Metrics:"
+    E.list uri >>= mapM_ (push sink)
 
-    -- putStrLn "Binding Metrics:"
-    -- B.list uri >>= push sink
+    putStrLn "Binding Metrics:"
+    B.list uri >>= push sink
 
-    -- putStrLn "Queue Metrics:"
-    -- Q.list uri >>= mapM_ (push sink)
+    putStrLn "Queue Metrics:"
+    Q.list uri >>= mapM_ (push sink)
 
     putStrLn "Overview Metrics:"
     O.show uri >>= push sink
@@ -66,7 +66,3 @@ mode Measure{..} = do
   where
     uri = parseUri optUri
 mode _ = error "Unsupported mode"
-
--- mode Cleanup{..} = do
---     body <- C.idle (parseUri optUri) optDays
---     displayInfo "Response" $ show body

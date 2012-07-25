@@ -57,7 +57,7 @@ instance Measurable [(Bool, Connection)] where
         , Gauge group "connection.stale" . len $ filter ((== True) . fst) xs
         ]
       where
-        len l = fromIntegral $ length l :: Double
+        len lst = fromIntegral $ length lst :: Double
 
 --
 -- API
