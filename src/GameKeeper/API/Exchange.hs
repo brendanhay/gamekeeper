@@ -21,9 +21,7 @@ import Data.Aeson.Types
 import Data.Maybe          (fromMaybe)
 import Data.Vector         (Vector)
 import GameKeeper.Http
-import Network.Metric
-
-import GameKeeper.Metric as M
+import GameKeeper.Metric
 
 import qualified Data.ByteString.Char8 as BS
 
@@ -34,12 +32,12 @@ data Exchange = Exchange
 
 instance FromJSON Exchange where
     parseJSON (Object o) = Exchange
-        <$> do name  <- o .: "name"
+        <$> do name <- o .: "name"
                return $ if BS.null name then "default" else name
         <*> do stats <- o .:? "message_stats_in"
                return . fromMaybe 0 $ stats >>= parseMaybe rate
       where
-        rate r = (r .: "publish_details") >>= (.: "rate")
+        rate v = (v .: "publish_details") >>= (.: "rate")
     parseJSON _ = empty
 
 instance Measurable Exchange where

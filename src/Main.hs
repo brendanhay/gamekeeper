@@ -19,8 +19,9 @@ import GameKeeper.Http    (parseUri)
 import GameKeeper.Metric
 import GameKeeper.Options
 
+import qualified GameKeeper.API.Overview   as O
 import qualified GameKeeper.API.Connection as C
-import qualified GameKeeper.API.Channel as CH
+import qualified GameKeeper.API.Channel    as CH
 import qualified GameKeeper.API.Exchange   as E
 import qualified GameKeeper.API.Binding    as B
 import qualified GameKeeper.API.Queue      as Q
@@ -43,20 +44,23 @@ mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
 
-    putStrLn "Connection Metrics:"
-    C.list uri >>= C.idle optDays >>= push sink
+    -- putStrLn "Connection Metrics:"
+    -- C.list uri >>= C.idle optDays >>= push sink
 
-    putStrLn "Channel Metrics:"
-    CH.list uri >>= push sink
+    -- putStrLn "Channel Metrics:"
+    -- CH.list uri >>= push sink
 
-    putStrLn "Exchange Metrics:"
-    E.list uri >>= mapM_ (push sink)
+    -- putStrLn "Exchange Metrics:"
+    -- E.list uri >>= mapM_ (push sink)
 
-    putStrLn "Binding Metrics:"
-    B.list uri >>= push sink
+    -- putStrLn "Binding Metrics:"
+    -- B.list uri >>= push sink
 
-    putStrLn "Queue Metrics:"
-    Q.list uri >>= mapM_ (push sink)
+    -- putStrLn "Queue Metrics:"
+    -- Q.list uri >>= mapM_ (push sink)
+
+    putStrLn "Overview Metrics:"
+    O.show uri >>= push sink
 
     close sink
   where

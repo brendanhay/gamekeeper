@@ -24,7 +24,6 @@ import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.Vector           (Vector)
-import Network.Metric
 import GameKeeper.Http
 import GameKeeper.Metric
 

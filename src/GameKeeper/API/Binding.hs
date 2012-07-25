@@ -19,7 +19,6 @@ import Control.Applicative   (empty)
 import Data.Aeson            (decode')
 import Data.Aeson.Types
 import Data.Vector           (Vector)
-import Network.Metric
 import GameKeeper.Http
 import GameKeeper.Metric
 

@@ -20,8 +20,7 @@ import Data.Aeson.Types
 import Data.Maybe       (isJust)
 import Data.Vector      (Vector)
 import GameKeeper.Http
-
-import GameKeeper.Metric as M
+import GameKeeper.Metric
 
 data Channel
     = Publisher
