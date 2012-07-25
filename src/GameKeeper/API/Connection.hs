@@ -53,10 +53,13 @@ instance FromJSON Connection where
 instance FromJSON POSIXTime where
     parseJSON json = liftM msToSeconds (parseJSON json)
 
-instance Measurable [Connection] where
-    measure xs = [Gauge group "connections" len]
+instance Measurable [(Bool, Connection)] where
+    measure xs =
+        [ Gauge group "connections.total" $ len xs
+        , Gauge group "connections.stale" . len $ filter ((== True) . fst) xs
+        ]
       where
-        len = fromIntegral $ length xs :: Double
+        len l = fromIntegral $ length l :: Double
 
 --
 -- API
@@ -68,19 +71,20 @@ list uri = getList uri "api/connections" query decode
     decode b = decode' b :: Maybe (Vector Connection)
     query    = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
 
-idle :: Uri -> Integer -> IO [Connection]
-idle uri days = list uri
-    -- time <- getPOSIXTime
-    -- liftM (filter (stale days time)) (list uri)
+idle :: Int -> [Connection] -> IO [(Bool, Connection)]
+idle days xs = do
+    n <- getPOSIXTime
+    return [(stale days n conn, conn) | conn <- xs]
 
 --
 -- Private
 --
 
--- stale :: Integer -> POSIXTime -> Connection -> Bool
--- stale days time Connection{..} = all diff [received, sent]
---   where
---     diff n = time >= n + 86400 * fromIntegral days
+stale :: Int -> POSIXTime -> Connection -> Bool
+stale days time Connection{..} = all diff [received, sent]
+  where
+    diff (Just n) = time >= n + 86400 * fromIntegral days
+    diff Nothing  = False
 
 msToSeconds :: Integer -> POSIXTime
 msToSeconds = realToFrac . (/ (1000 :: Double)) . fromIntegral

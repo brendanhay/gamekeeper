@@ -22,14 +22,15 @@ import System.Exit            (ExitCode(..), exitWith)
 import GameKeeper.Metric
 
 data Options =
-      PushStatistics
+      Measure
         { optUri :: String
+        , optDays :: Int
         , optSink :: SinkOptions
         }
-    | CleanConnections
+    | Cleanup
         { optUri  :: String
         , optDry  :: Bool
-        , optDays :: Integer
+        , optDays :: Int
         }
       deriving (Data, Typeable, Show)
 
@@ -61,8 +62,8 @@ parse = cmdArgsMode $ modes [pushStatistics, cleanConnections]
     &= program programName
 
 validate :: Options -> IO Options
-validate opts@PushStatistics{..}   = return opts
-validate opts@CleanConnections{..} = return opts
+validate opts@Measure{..}   = return opts
+validate opts@Cleanup{..} = return opts
     -- exitWhen (null optUri) "--uri cannot be blank"
     -- return opts
 
@@ -74,22 +75,26 @@ exitWhen p msg = when p $ putStrLn msg >> exitWith (ExitFailure 1)
 --
 
 pushStatistics :: Options
-pushStatistics = PushStatistics
+pushStatistics = Measure
     { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
+        &= explicit
+    , optDays = 1
+        &= name "days"
+        &= help "The number of days inactivity after which a connection is considered stale (default: 1)"
         &= explicit
     , optSink = SinkOptions Stdout "localhost" "5678"
         &= name "sink"
         &= typ  "SINK,HOST,PORT"
         &= help "The sink to write metrics to (default: stdout)"
         &= explicit
-    } &= name "push-statistics"
+    } &= name "measure"
       &= help "Deliver statistics and metrics to the specified sink"
 
 cleanConnections :: Options
-cleanConnections = CleanConnections
+cleanConnections = Cleanup
     { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
@@ -103,7 +108,7 @@ cleanConnections = CleanConnections
         &= name "days"
         &= help "The number of days to prune (default: 30)"
         &= explicit
-    } &= name "clean-connections"
+    } &= name "cleanup"
       &= help "Perform stale connection cleanup"
       &= explicit
 
