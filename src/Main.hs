@@ -20,6 +20,7 @@ import GameKeeper.Metric
 import GameKeeper.Options
 
 import qualified GameKeeper.API.Connection as C
+import qualified GameKeeper.API.Channel as CH
 import qualified GameKeeper.API.Exchange   as E
 import qualified GameKeeper.API.Binding    as B
 import qualified GameKeeper.API.Queue      as Q
@@ -32,18 +33,21 @@ main :: IO ()
 main = do
     opts <- parseOptions
     displayInfo "Mode" $ show opts
-    runMode opts
+    mode opts
 
 --
 -- Private
 --
 
-runMode :: Options -> IO ()
-runMode Measure{..} = do
+mode :: Options -> IO ()
+mode Measure{..} = do
     sink <- open optSink
 
     putStrLn "Connection Metrics:"
     C.list uri >>= C.idle optDays >>= push sink
+
+    putStrLn "Channel Metrics:"
+    CH.list uri >>= push sink
 
     putStrLn "Exchange Metrics:"
     E.list uri >>= mapM_ (push sink)
@@ -57,6 +61,8 @@ runMode Measure{..} = do
     close sink
   where
     uri = parseUri optUri
--- runMode Cleanup{..} = do
+mode _ = error "Unsupported mode"
+
+-- mode Cleanup{..} = do
 --     body <- C.idle (parseUri optUri) optDays
 --     displayInfo "Response" $ show body
