@@ -18,6 +18,7 @@ module GameKeeper.API.Exchange (
 import Control.Applicative ((<$>), (<*>), empty)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
+import Data.Maybe          (fromMaybe)
 import Data.Vector         (Vector)
 import GameKeeper.Http
 import Network.Metric
@@ -36,9 +37,9 @@ instance FromJSON Exchange where
         <$> do name  <- o .: "name"
                return $ if BS.null name then "default" else name
         <*> do stats <- o .:? "message_stats_in"
-               case stats of
-                   Just v  -> (v .: "publish_details") >>= (.: "rate")
-                   Nothing -> return 0
+               return . fromMaybe 0 $ stats >>= parseMaybe rate
+      where
+        rate r = (r .: "publish_details") >>= (.: "rate")
     parseJSON _ = empty
 
 instance Measurable Exchange where
