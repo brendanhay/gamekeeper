@@ -47,7 +47,6 @@ instance FromJSON Connection where
         event k = do
             d <- o .:? k
             return $ d >>= parseMaybe (.: "last_event")
-
     parseJSON _ = empty
 
 instance FromJSON POSIXTime where

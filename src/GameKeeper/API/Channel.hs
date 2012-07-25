@@ -15,12 +15,11 @@ module GameKeeper.API.Channel (
   , list
   ) where
 
-import Data.Aeson          (decode')
+import Data.Aeson       (decode')
 import Data.Aeson.Types
-import Data.Maybe          (isJust)
-import Data.Vector         (Vector)
+import Data.Maybe       (isJust)
+import Data.Vector      (Vector)
 import GameKeeper.Http
-import Network.Metric
 
 import GameKeeper.Metric as M
 
