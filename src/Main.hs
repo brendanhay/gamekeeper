@@ -22,12 +22,12 @@ import GameKeeper.Http        (parseUri)
 import GameKeeper.Metric
 import GameKeeper.Options
 
-import qualified GameKeeper.API.Overview   as O
-import qualified GameKeeper.API.Connection as C
-import qualified GameKeeper.API.Channel    as CH
-import qualified GameKeeper.API.Exchange   as E
-import qualified GameKeeper.API.Binding    as B
-import qualified GameKeeper.API.Queue      as Q
+import qualified GameKeeper.API.Overview   as Over
+import qualified GameKeeper.API.Connection as Conn
+import qualified GameKeeper.API.Channel    as Chan
+import qualified GameKeeper.API.Exchange   as Exch
+import qualified GameKeeper.API.Binding    as Bind
+import qualified GameKeeper.API.Queue      as Queu
 
 --
 -- API
@@ -46,12 +46,12 @@ main = do
 mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
-    mapM_ fork [ C.list uri >>= C.idle optDays >>= push sink
-               , CH.list uri >>= push sink
-               , E.list uri >>= mapM_ (push sink)
-               , B.list uri >>= push sink
-               , Q.list uri >>= mapM_ (push sink)
-               , O.show uri >>= push sink
+    mapM_ fork [ Conn.list uri >>= Conn.idle optDays >>= push sink
+               , Chan.list uri >>= push sink
+               , Exch.list uri >>= mapM_ (push sink)
+               , Bind.list uri >>= push sink
+               , Queu.list uri >>= mapM_ (push sink)
+               , Over.show uri >>= push sink
                ]
     wait
     close sink
