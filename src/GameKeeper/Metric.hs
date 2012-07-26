@@ -60,7 +60,7 @@ bucket :: M.Bucket -> M.Bucket -> M.Bucket
 bucket a b = BS.intercalate "." [a, b]
 
 escape :: M.Bucket -> M.Bucket
-escape = BS.map replace
+escape = BS.map fn
   where
-    replace '.' = '/'
-    replace c   = c
+    fn '.' = '/'
+    fn c   = c
