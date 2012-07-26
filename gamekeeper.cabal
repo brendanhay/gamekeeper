@@ -36,7 +36,7 @@ executable gamekeeper
                   , TypeSynonymInstances
                   , FlexibleInstances
 
-  ghc-options:      -Wall -rtsopts
+  ghc-options:      -Wall -rtsopts -threaded
   ghc-prof-options: -prof -fprof-auto -auto-all -with-rtsopts=-p
 
   build-depends:    base >= 4.3 && < 5

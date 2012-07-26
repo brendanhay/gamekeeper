@@ -20,10 +20,10 @@ module GameKeeper.Http (
     , getBody
   ) where
 
+import Control.Monad.IO.Class      (liftIO)
 import Data.Maybe                  (fromJust)
 import Data.Vector                 (Vector, toList)
 import Network.HTTP.Conduit hiding (queryString, path)
-import GameKeeper.Console          (displayInfo)
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy  as BL
@@ -54,16 +54,22 @@ getList :: Uri
         -> IO [a]
 getList uri path query decode = do
     body <- getBody uri { uriPath = path, uriQuery = query }
-    displayInfo "Response" $ show (BL.length body) ++ " chars"
     return $ case decode body of
         Just v  -> toList v
         Nothing -> []
 
 getBody :: Uri -> IO BL.ByteString
 getBody uri = do
-    displayInfo "GET" $ abspath uri
+    putStrLn $ "[GET] -> " ++ abspath uri
     withManager $ \manager -> do
         Response _ _ _ body <- httpLbs (request uri) manager
+        liftIO . putStrLn $ concat
+            [ "["
+            , show (BL.length body)
+            , " Chars"
+            , "] <- "
+            , abspath uri
+            ]
         return body
 
 --

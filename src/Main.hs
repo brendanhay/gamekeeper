@@ -14,8 +14,11 @@ module Main (
       main
     ) where
 
-import GameKeeper.Console (displayInfo)
-import GameKeeper.Http    (parseUri)
+import Control.Concurrent
+import Control.Exception.Base (finally)
+import System.IO.Unsafe
+import GameKeeper.Console     (displayInfo)
+import GameKeeper.Http        (parseUri)
 import GameKeeper.Metric
 import GameKeeper.Options
 
@@ -43,26 +46,35 @@ main = do
 mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
-
-    putStrLn "Connection Metrics:"
-    C.list uri >>= C.idle optDays >>= push sink
-
-    putStrLn "Channel Metrics:"
-    CH.list uri >>= push sink
-
-    putStrLn "Exchange Metrics:"
-    E.list uri >>= mapM_ (push sink)
-
-    putStrLn "Binding Metrics:"
-    B.list uri >>= push sink
-
-    putStrLn "Queue Metrics:"
-    Q.list uri >>= mapM_ (push sink)
-
-    putStrLn "Overview Metrics:"
-    O.show uri >>= push sink
-
+    mapM_ fork [ C.list uri >>= C.idle optDays >>= push sink
+               , CH.list uri >>= push sink
+               , E.list uri >>= mapM_ (push sink)
+               , B.list uri >>= push sink
+               , Q.list uri >>= mapM_ (push sink)
+               , O.show uri >>= push sink
+               ]
+    wait
     close sink
   where
     uri = parseUri optUri
 mode _ = error "Unsupported mode"
+
+children :: MVar [MVar ()]
+children = unsafePerformIO (newMVar [])
+
+wait :: IO ()
+wait = do
+    cs <- takeMVar children
+    case cs of
+        []   -> return ()
+        m:ms -> do
+            putMVar children ms
+            takeMVar m
+            wait
+
+fork :: IO () -> IO ThreadId
+fork io = do
+    mvar    <- newEmptyMVar
+    threads <- takeMVar children
+    putMVar children (mvar:threads)
+    forkIO (io `finally` putMVar mvar ())
