@@ -17,8 +17,8 @@ module Main (
 import Control.Concurrent
 import Control.Exception.Base (finally)
 import System.IO.Unsafe
-import GameKeeper.Console     (displayInfo)
 import GameKeeper.Http        (parseUri)
+import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Options
 
@@ -36,31 +36,49 @@ import qualified GameKeeper.API.Queue      as Queu
 main :: IO ()
 main = do
     opts <- parseOptions
-    displayInfo "Mode" $ show opts
+    logDebug $ "Mode: " ++ show opts
     mode opts
 
 --
--- Private
+-- Modes
 --
 
 mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
-    mapM_ fork [ Conn.list uri >>= Conn.idle optDays >>= push sink
-               , Chan.list uri >>= push sink
-               , Exch.list uri >>= mapM_ (push sink)
-               , Bind.list uri >>= push sink
-               , Queu.list uri >>= mapM_ (push sink)
-               , Over.show uri >>= push sink
-               ]
+    forkAll [ Over.show uri >>= push sink
+            , Conn.list uri >>= Conn.idle optDays >>= push sink
+            , Chan.list uri >>= push sink
+            , Exch.list uri >>= mapM_ (push sink)
+            , Queu.list uri >>= mapM_ (push sink)
+            , Bind.list uri >>= push sink
+            ]
     wait
     close sink
   where
     uri = parseUri optUri
-mode _ = error "Unsupported mode"
+mode _ = logError msg >> error msg
+  where
+    msg = "Unsupported mode"
+
+--
+-- Forking
+--
 
 children :: MVar [MVar ()]
 children = unsafePerformIO (newMVar [])
+
+forkAll :: [IO ()] -> IO ()
+forkAll = mapM_ f
+  where
+    f g = fork g >>= logDebug . ("Spark: " ++) . show
+
+fork :: IO () -> IO ThreadId
+fork io = do
+    mvar    <- newEmptyMVar
+    threads <- takeMVar children
+    putMVar children (mvar:threads)
+    forkIO (io `finally` putMVar mvar ())
 
 wait :: IO ()
 wait = do
@@ -71,10 +89,3 @@ wait = do
             putMVar children ms
             takeMVar m
             wait
-
-fork :: IO () -> IO ThreadId
-fork io = do
-    mvar    <- newEmptyMVar
-    threads <- takeMVar children
-    putMVar children (mvar:threads)
-    forkIO (io `finally` putMVar mvar ())

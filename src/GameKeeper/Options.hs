@@ -15,24 +15,27 @@ module GameKeeper.Options (
     , parseOptions
     ) where
 
+
 import Control.Monad          (when)
+import Data.Version           (showVersion)
+import Paths_gamekeeper       (version)
 import System.Console.CmdArgs
 import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
 import GameKeeper.Metric
 
-data Options =
-      Measure
-        { optUri :: String
-        , optDays :: Int
-        , optSink :: SinkOptions
-        }
+data Options
+    = Measure
+      { optUri :: String
+      , optDays :: Int
+      , optSink :: SinkOptions
+      }
     | Cleanup
-        { optUri  :: String
-        , optDry  :: Bool
-        , optDays :: Int
-        }
-      deriving (Data, Typeable, Show)
+      { optUri  :: String
+      , optDry  :: Bool
+      , optDays :: Int
+      }
+    deriving (Data, Typeable, Show)
 
 --
 -- API
@@ -48,11 +51,10 @@ parseOptions = do
 -- Parsing
 --
 
-programName, programVersion, programInfo, copyright :: String
-programName    = "gamekeeper"
-programVersion = "0.1.0"
-programInfo    = programName ++ " version " ++ programVersion
-copyright      = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
+programName, programInfo, copyright :: String
+programName = "gamekeeper"
+programInfo = programName ++ " version " ++ showVersion version
+copyright   = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
 parse :: Mode (CmdArgs Options)
 parse = cmdArgsMode $ modes [pushStatistics, cleanConnections]
@@ -62,8 +64,9 @@ parse = cmdArgsMode $ modes [pushStatistics, cleanConnections]
     &= program programName
 
 validate :: Options -> IO Options
-validate opts@Measure{..}   = return opts
+validate opts@Measure{..} = return opts
 validate opts@Cleanup{..} = return opts
+
     -- exitWhen (null optUri) "--uri cannot be blank"
     -- return opts
 
@@ -85,7 +88,7 @@ pushStatistics = Measure
         &= name "days"
         &= help "The number of days inactivity after which a connection is considered stale (default: 1)"
         &= explicit
-    , optSink = SinkOptions Stdout "localhost" "5678"
+    , optSink = SinkOptions Stdout "" ""
         &= name "sink"
         &= typ  "SINK,HOST,PORT"
         &= help "The sink to write metrics to (default: stdout)"

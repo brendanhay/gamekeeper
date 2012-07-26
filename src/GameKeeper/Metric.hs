@@ -32,25 +32,36 @@ module GameKeeper.Metric (
     , M.Sink(..)
     ) where
 
-import Data.Data       (Data, Typeable)
-import Data.Word       (Word16)
+import Data.Data         (Data, Typeable)
+import Data.Word         (Word16)
 import Network.Socket
+import GameKeeper.Logger
 
-import qualified Data.ByteString.Char8 as BS
-import qualified Network.Metric        as M
+import qualified Data.ByteString.Char8      as BS
+import qualified Network.Metric             as M
+import qualified Network.Metric.Sink.Handle as H
 
 data SinkOptions = SinkOptions
     { sinkType :: M.SinkType
     , sinkHost :: String
     , sinkPort :: String
     } deriving (Data, Typeable, Show)
+
+-- Temporary until network-metrics is updated
+instance Eq M.SinkType where
+    M.Stdout == M.Stdout = True
+    _ == _               = False
+
 --
 -- API
 --
 
 open :: SinkOptions -> IO M.AnySink
-open SinkOptions{..} = M.open sinkType "localhost" sinkHost port
+open SinkOptions{..} = sink
   where
+    sink | sinkType == M.Stdout = return . M.AnySink $ H.SinkHandle host logInfo
+         | otherwise            = M.open sinkType host sinkHost port
+    host = "localhost"
     port = PortNum (read sinkPort :: Word16)
 
 group :: M.Group

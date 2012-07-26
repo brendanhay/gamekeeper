@@ -20,11 +20,12 @@ module GameKeeper.Http (
     , getBody
   ) where
 
-import Text.Printf (printf)
+import Text.Printf                 (printf)
 import Control.Monad.IO.Class      (liftIO)
 import Data.Maybe                  (fromJust)
 import Data.Vector                 (Vector, toList)
 import Network.HTTP.Conduit hiding (queryString, path)
+import GameKeeper.Logger
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy  as BL
@@ -61,10 +62,10 @@ getList uri path query decode = do
 
 getBody :: Uri -> IO BL.ByteString
 getBody uri = do
-    putStrLn $ "[GET] -> " ++ abspath uri
+    logInfo $ "[GET] -> " ++ abspath uri
     withManager $ \manager -> do
         Response _ _ _ body <- httpLbs (request uri) manager
-        liftIO . putStrLn $ concat
+        liftIO . logInfo $ concat
             [ "["
             , printf "%.2f" $ kb body
             , " kB"
