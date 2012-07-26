@@ -22,6 +22,7 @@ module GameKeeper.Metric (
     -- * Functions
     , group
     , bucket
+    , escape
 
     -- * Re-exports
     , M.SinkType(..)
@@ -35,8 +36,8 @@ import Data.Data       (Data, Typeable)
 import Data.Word       (Word16)
 import Network.Socket
 
-import qualified Data.ByteString as BS
-import qualified Network.Metric  as M
+import qualified Data.ByteString.Char8 as BS
+import qualified Network.Metric        as M
 
 data SinkOptions = SinkOptions
     { sinkType :: M.SinkType
@@ -58,6 +59,8 @@ group = "rabbit"
 bucket :: M.Bucket -> M.Bucket -> M.Bucket
 bucket a b = BS.intercalate "." [a, b]
 
---
--- Private
---
+escape :: M.Bucket -> M.Bucket
+escape = BS.map replace
+  where
+    replace '.' = '/'
+    replace c   = c

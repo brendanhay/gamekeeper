@@ -41,7 +41,9 @@ instance FromJSON Exchange where
     parseJSON _ = empty
 
 instance Measurable Exchange where
-    measure Exchange{..} = [Gauge group (bucket "exchange.rate" name) rate]
+    measure Exchange{..} =
+        [ Gauge group (bucket "exchange.rate" $ escape name) rate
+        ]
 
 --
 -- API

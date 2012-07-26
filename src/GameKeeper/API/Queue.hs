@@ -42,9 +42,9 @@ instance FromJSON Queue where
 
 instance Measurable Queue where
     measure Queue{..} =
-        [ Gauge group (bucket "queue.messages" name) (fromIntegral messages)
-        , Gauge group (bucket "queue.consumers" name) (fromIntegral consumers)
-        , Gauge group (bucket "queue.memory" name) memory
+        [ Gauge group (bucket "queue.messages" $ escape name) (fromIntegral messages)
+        , Gauge group (bucket "queue.consumers" $ escape name) (fromIntegral consumers)
+        , Gauge group (bucket "queue.memory" $ escape name) memory
         ]
 
 --
