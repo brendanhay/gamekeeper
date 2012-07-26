@@ -82,7 +82,7 @@ instance Measurable Rate where
         ]
 
 instance Measurable Overview where
-    measure (Overview c r) = concat [measure c, measure r]
+    measure (Overview c r) = measure c ++ measure r
 
 --
 -- API
