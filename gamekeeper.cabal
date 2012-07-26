@@ -45,7 +45,7 @@ executable gamekeeper
                   , regex-compat
                   , http-conduit
                   , network
-                  , network-metrics >= 0.1.5
+                  , network-metrics >= 0.1.9
                   , utf8-string
                   , bytestring
                   , vector

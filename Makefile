@@ -1,24 +1,18 @@
 CABAL=`which cabal-dev`
-METRICS=../network-metrics
 
 #
 # Targets
 #
 
-.PHONY: install build deps conf clean prof
+.PHONY: install build conf clean prof
 
-all: build
+all: install
+
+install:
+	$(CABAL) install
 
 build:
 	$(CABAL) build
-
-install: deps
-	$(CABAL) install
-
-deps:
-	$(MAKE) -C $(METRICS)
-	$(CABAL) add-source $(METRICS)
-	$(CABAL) install network-metrics --reinstall
 
 conf:
 	$(CABAL) configure
