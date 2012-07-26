@@ -20,6 +20,7 @@ module GameKeeper.Http (
     , getBody
   ) where
 
+import Text.Printf (printf)
 import Control.Monad.IO.Class      (liftIO)
 import Data.Maybe                  (fromJust)
 import Data.Vector                 (Vector, toList)
@@ -65,12 +66,14 @@ getBody uri = do
         Response _ _ _ body <- httpLbs (request uri) manager
         liftIO . putStrLn $ concat
             [ "["
-            , show (BL.length body)
-            , " Chars"
+            , printf "%.2f" $ kb body
+            , " kB"
             , "] <- "
             , abspath uri
             ]
         return body
+  where
+    kb body = (/ 1024) . fromIntegral $ BL.length body :: Float
 
 --
 -- Private
