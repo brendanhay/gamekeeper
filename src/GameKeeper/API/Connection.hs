@@ -31,7 +31,6 @@ import qualified Data.ByteString.Char8 as BS
 
 data Connection = Connection
     { name     :: BS.ByteString
-    , user     :: BS.ByteString
     , received :: Maybe POSIXTime
     , sent     :: Maybe POSIXTime
     } deriving (Show)
@@ -39,7 +38,6 @@ data Connection = Connection
 instance FromJSON Connection where
     parseJSON (Object o) = Connection
         <$> o .: "name"
-        <*> o .: "user"
         <*> event "send_oct_details"
         <*> event "recv_oct_details"
       where
@@ -67,7 +65,7 @@ list :: Uri -> IO [Connection]
 list uri = getList uri "api/connections" query decode
   where
     decode b = decode' b :: Maybe (Vector Connection)
-    query    = "?columns=name,user,recv_oct_details.last_event,send_oct_details.last_event"
+    query    = "?columns=name,recv_oct_details.last_event,send_oct_details.last_event"
 
 idle :: Int -> [Connection] -> IO [(Bool, Connection)]
 idle days xs = do
