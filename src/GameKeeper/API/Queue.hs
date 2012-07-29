@@ -16,6 +16,7 @@ module GameKeeper.API.Queue (
 
     -- * HTTP Requests
     , listQueues
+    , deleteQueue
 
     -- * Filters
     , idleQueues
@@ -34,6 +35,7 @@ import qualified Data.ByteString.Char8 as BS
 
 data Queue = Queue
     { name      :: BS.ByteString
+    , vhost     :: BS.ByteString
     , messages  :: Double
     , consumers :: Double
     , memory    :: Double
@@ -42,6 +44,7 @@ data Queue = Queue
 instance FromJSON Queue where
     parseJSON (Object o) = Queue
         <$> o .: "name"
+        <*> o .: "vhost"
         <*> o .: "messages"
         <*> o .: "consumers"
         <*> liftM megabytes (o .: "memory")
@@ -50,7 +53,7 @@ instance FromJSON Queue where
 instance Measurable [(Bool, Queue)] where
     measure lst =
         [ Gauge group "queue.total" $ len lst
-        , Gauge group "queue.idle" $ idle lst
+        , Gauge group "queue.idle" . len $ idle lst
         ]
 
 instance Measurable Queue where
@@ -65,10 +68,18 @@ instance Measurable Queue where
 --
 
 listQueues :: Uri -> IO [Queue]
-listQueues uri = getList uri "api/queues" query decode
+listQueues uri = list uri "api/queues" query decode
   where
     decode b = decode' b :: Maybe (Vector Queue)
-    query    = "?columns=name,messages,consumers,memory"
+    query    = "?columns=name,vhost,messages,consumers,memory"
+
+deleteQueue :: Uri -> Queue -> IO ()
+deleteQueue uri Queue{..} = do
+    _ <- delete uri { uriPath = BS.concat ["api/queues/", enc, "/", name] }
+    return ()
+  where
+    enc | vhost == "/" = "%2f"
+        | otherwise    = vhost
 
 idleQueues :: [Queue] -> [(Bool, Queue)]
 idleQueues = filterQueues (\Queue{..} -> consumers == 0)

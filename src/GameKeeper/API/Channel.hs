@@ -67,7 +67,7 @@ instance Measurable [Channel] where
 --
 
 listChannels :: Uri -> IO [Channel]
-listChannels uri = getList uri "api/channels" query decode
+listChannels uri = list uri "api/channels" query decode
   where
     decode b = decode' b :: Maybe (Vector Channel)
     query    = "?columns=message_stats.publish,message_stats.deliver"

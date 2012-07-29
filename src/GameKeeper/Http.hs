@@ -16,8 +16,9 @@ module GameKeeper.Http (
 
     -- * Functions
     , parseUri
-    , getList
-    , getBody
+    , list
+    , get
+    , delete
     ) where
 
 import Text.Printf                 (printf)
@@ -25,6 +26,7 @@ import Control.Monad.IO.Class      (liftIO)
 import Data.Maybe                  (fromJust)
 import Data.Vector                 (Vector, toList)
 import Network.HTTP.Conduit hiding (queryString, path)
+import Network.HTTP.Types.Method
 import GameKeeper.Logger
 
 import qualified Data.ByteString.Char8 as BS
@@ -49,22 +51,31 @@ data Uri = Uri
 parseUri :: String -> Uri
 parseUri = conv . U.parseURI
 
-getList :: Uri
-        -> BS.ByteString
-        -> BS.ByteString
-        -> (BL.ByteString -> Maybe (Vector a))
-        -> IO [a]
-getList uri path query decode = do
-    body <- getBody uri { uriPath = path, uriQuery = query }
+list :: Uri
+     -> BS.ByteString
+     -> BS.ByteString
+     -> (BL.ByteString -> Maybe (Vector a))
+     -> IO [a]
+list uri path query decode = do
+    body <- get uri { uriPath = path, uriQuery = query }
     return $ case decode body of
         Just v  -> toList v
         Nothing -> []
 
-getBody :: Uri -> IO BL.ByteString
-getBody uri = do
-    logInfo $ "[GET] -> " ++ abspath uri
-    withManager $ \manager -> do
-        Response _ _ _ body <- httpLbs (request uri) manager
+get :: Uri -> IO BL.ByteString
+get = request "GET"
+
+delete :: Uri -> IO BL.ByteString
+delete = request "DELETE"
+
+--
+-- Private
+--
+
+request :: Method -> Uri -> IO BL.ByteString
+request method uri = withManager $ \manager -> do
+        Response _ _ _ body <- httpLbs req { method = method } manager
+        liftIO . logInfo $ concat ["[", show method, "] -> ", abspath uri]
         liftIO . logInfo $ concat
             [ "["
             , printf "%.2f" $ kb body
@@ -74,14 +85,11 @@ getBody uri = do
             ]
         return body
   where
-    kb body = (/ 1024) . fromIntegral $ BL.length body :: Float
+    req     = prepare uri
+    kb bstr = (/ 1024) . fromIntegral $ BL.length bstr :: Float
 
---
--- Private
---
-
-request :: Uri -> Request m
-request uri@Uri{..} = case parseUrl $ abspath uri of
+prepare :: Uri -> Request m
+prepare uri@Uri{..} = case parseUrl $ abspath uri of
     Just req -> applyBasicAuth uriUser uriPass req
     Nothing  -> error $ "Invalid Request: " ++ abspath uri
 

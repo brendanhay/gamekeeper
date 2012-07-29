@@ -42,14 +42,13 @@ executable gamekeeper
   build-depends:    base >= 4.3 && < 5
                   , ghc-prim
                   , transformers
-                  , regex-compat
                   , http-conduit
+                  , http-types
                   , network
-                  , network-metrics >= 0.1.9
+                  , network-metrics
                   , utf8-string
                   , bytestring
                   , vector
-                  , attoparsec
                   , aeson
                   , cmdargs
                   , time

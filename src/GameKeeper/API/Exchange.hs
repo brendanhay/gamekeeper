@@ -53,7 +53,7 @@ instance Measurable Exchange where
 --
 
 listExchanges :: Uri -> IO [Exchange]
-listExchanges uri = getList uri "api/exchanges" query decode
+listExchanges uri = list uri "api/exchanges" query decode
   where
     decode b = decode' b :: Maybe (Vector Exchange)
     query    = "?columns=name,message_stats_in.publish_details.rate"

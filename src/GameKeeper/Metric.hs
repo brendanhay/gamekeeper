@@ -81,5 +81,5 @@ esc = BS.map fn
 len :: [a] -> Double
 len lst = fromIntegral $ length lst :: Double
 
-idle :: [(Bool, a)] -> Double
-idle = len . filter ((== True) . fst)
+idle :: [(Bool, a)] -> [a]
+idle = map snd . filter ((== True) . fst)

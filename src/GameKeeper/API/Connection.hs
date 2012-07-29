@@ -18,6 +18,7 @@ module GameKeeper.API.Connection (
 
     -- * HTTP Requests
     , listConnections
+    , deleteConnection
 
     -- * Filters
     , idleConnections
@@ -57,7 +58,7 @@ instance FromJSON POSIXTime where
 instance Measurable [(Bool, Connection)] where
     measure lst =
         [ Gauge group "connection.total" $ len lst
-        , Gauge group "connection.idle" $ idle lst
+        , Gauge group "connection.idle" . len $ idle lst
         ]
 
 --
@@ -65,10 +66,15 @@ instance Measurable [(Bool, Connection)] where
 --
 
 listConnections :: Uri -> IO [Connection]
-listConnections uri = getList uri "api/connections" query decode
+listConnections uri = list uri "api/connections" query decode
   where
     decode b = decode' b :: Maybe (Vector Connection)
     query    = "?columns=name,recv_oct_details.last_event,send_oct_details.last_event"
+
+deleteConnection :: Uri -> Connection -> IO ()
+deleteConnection uri Connection{..} = do
+    _ <- delete uri { uriPath = BS.concat ["api/connections/", name] }
+    return ()
 
 idleConnections :: Int -> [Connection] -> IO [(Bool, Connection)]
 idleConnections days lst = do

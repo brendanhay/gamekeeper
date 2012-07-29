@@ -10,19 +10,11 @@
 -- Portability : non-portable (GHC extensions)
 --
 
-module GameKeeper.API (
-      -- * Re-exports
-      module GameKeeper.API.Overview
-    , module GameKeeper.API.Connection
-    , module GameKeeper.API.Channel
-    , module GameKeeper.API.Exchange
-    , module GameKeeper.API.Binding
-    , module GameKeeper.API.Queue
-    ) where
+module GameKeeper.API (module E) where
 
-import GameKeeper.API.Overview
-import GameKeeper.API.Connection
-import GameKeeper.API.Channel
-import GameKeeper.API.Exchange
-import GameKeeper.API.Binding
-import GameKeeper.API.Queue
+import GameKeeper.API.Overview   as E
+import GameKeeper.API.Connection as E
+import GameKeeper.API.Channel    as E
+import GameKeeper.API.Exchange   as E
+import GameKeeper.API.Binding    as E
+import GameKeeper.API.Queue      as E

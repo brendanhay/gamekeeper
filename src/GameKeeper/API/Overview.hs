@@ -93,5 +93,5 @@ instance Measurable Overview where
 
 showOverview :: Uri -> IO Overview
 showOverview uri = do
-    body <- getBody uri { uriPath = "api/overview" }
+    body <- get uri { uriPath = "api/overview" }
     return $ fromJust (decode' body :: Maybe Overview)

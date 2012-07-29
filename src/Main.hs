@@ -53,10 +53,15 @@ mode Measure{..} = do
     wait
     close sink
   where
-    uri  = parseUri optUri
-mode _ = logError msg >> error msg
+    uri = parseUri optUri
+mode Clean{..} | optResource == ConnectionResource = do
+    cs <- listConnections uri >>= idleConnections optDays >>= return . idle
+    mapM_ (deleteConnection uri) cs
+               | optResource == QueueResource = do
+    qs <- listQueues uri
+    mapM_ (deleteQueue uri) . idle $ unusedQueues qs
   where
-    msg = "Unsupported mode"
+    uri = parseUri optUri
 
 --
 -- Forking

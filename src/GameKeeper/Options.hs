@@ -13,23 +13,24 @@
 module GameKeeper.Options (
     -- * Exported Types
       Options(..)
+    , Resource(..)
 
     -- * Functions
     , parseOptions
     ) where
 
-import Control.Monad          (when)
-import Data.Version           (showVersion)
-import Paths_gamekeeper       (version)
+import Control.Monad            (when)
+import Data.Version             (showVersion)
+import Paths_gamekeeper         (version)
 import System.Console.CmdArgs
-import System.Environment     (getArgs, withArgs)
-import System.Exit            (ExitCode(..), exitWith)
-import GameKeeper.Metric
+import System.Environment       (getArgs, withArgs)
+import System.Exit              (ExitCode(..), exitWith)
+import GameKeeper.Metric hiding (measure)
 
-data CleanType
-    = Connection
-    | Queue
-      deriving (Data, Typeable, Show)
+data Resource
+    = ConnectionResource
+    | QueueResource
+      deriving (Data, Typeable, Eq, Show)
 
 data Options
     = Measure
@@ -39,7 +40,7 @@ data Options
       }
     | Clean
       { optUri      :: String
-      , optResource :: CleanType
+      , optResource :: Resource
       , optDays     :: Int
       , optDry      :: Bool
       }
@@ -65,7 +66,7 @@ programInfo = programName ++ " version " ++ showVersion version
 copyright   = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
 parse :: Mode (CmdArgs Options)
-parse = cmdArgsMode $ modes [pushStatistics, cleanConnections]
+parse = cmdArgsMode $ modes [measure, clean]
     &= versionArg [explicit, name "version", name "v", summary programInfo]
     &= summary (programInfo ++ ", " ++ copyright)
     &= helpArg [explicit, name "help", name "h"]
@@ -85,8 +86,8 @@ exitWhen p msg = when p $ putStrLn msg >> exitWith (ExitFailure 1)
 -- Modes
 --
 
-pushStatistics :: Options
-pushStatistics = Measure
+measure :: Options
+measure = Measure
     { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
@@ -104,14 +105,14 @@ pushStatistics = Measure
     } &= name "measure"
       &= help "Deliver statistics and metrics to the specified sink"
 
-cleanConnections :: Options
-cleanConnections = Clean
+clean :: Options
+clean = Clean
     { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
         &= explicit
-    , optResource = Connection
+    , optResource = ConnectionResource
         &= name "resource"
         &= typ "RESOURCE"
         &= help "The resource (RESOURCE: connection|queue) to cleanup (default: connection)"

@@ -40,6 +40,6 @@ instance Measurable [Binding] where
 --
 
 listBindings :: Uri -> IO [Binding]
-listBindings uri = getList uri "api/bindings" "?columns=" decode
+listBindings uri = list uri "api/bindings" "?columns=" decode
   where
     decode b = decode' b :: Maybe (Vector Binding)
