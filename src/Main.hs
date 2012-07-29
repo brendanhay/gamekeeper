@@ -75,9 +75,9 @@ mode CheckNode{..} = do
     f cnt optMessages
   where
     uri = parseUri optUri
-    f n health | total n >= warning health  = N.warning
-               | total n >= critical health = N.critical
-               | otherwise                  = N.ok
+    f n Health{..} | total n >= warning  = N.warning
+                   | total n >= critical = N.critical
+                   | otherwise           = N.ok
 
 mode _ = logError msg >> error msg
   where
