@@ -17,6 +17,7 @@ module Main (
 
 import Control.Concurrent
 import Control.Exception.Base (finally)
+import Control.Monad          (liftM)
 import System.IO.Unsafe       (unsafePerformIO)
 import GameKeeper.API
 import GameKeeper.Http
@@ -55,13 +56,16 @@ mode Measure{..} = do
   where
     uri = parseUri optUri
 mode Clean{..} | optResource == ConnectionResource = do
-    cs <- listConnections uri >>= idleConnections optDays >>= return . idle
+    cs <- liftM idle (listConnections uri >>= idleConnections optDays)
     mapM_ (deleteConnection uri) cs
                | optResource == QueueResource = do
     qs <- listQueues uri
     mapM_ (deleteQueue uri) . idle $ unusedQueues qs
   where
     uri = parseUri optUri
+mode _ = logError msg >> error msg
+  where
+    msg = "Unsupported mode"
 
 --
 -- Forking
