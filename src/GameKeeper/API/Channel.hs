@@ -11,9 +11,12 @@
 --
 
 module GameKeeper.API.Channel (
-    Channel
-  , listChannels
-  ) where
+    -- * Exported Types
+      Channel
+
+    -- * HTTP Requests
+    , listChannels
+    ) where
 
 import Data.Aeson       (decode')
 import Data.Aeson.Types

@@ -11,9 +11,14 @@
 --
 
 module GameKeeper.API.Queue (
-    Queue
-  , listQueues
-  , idleQueues
+    -- * Exported Types
+      Queue
+
+    -- * HTTP Requests
+    , listQueues
+
+    -- * Filters
+    , idleQueues
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)

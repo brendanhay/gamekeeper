@@ -13,10 +13,15 @@
 --
 
 module GameKeeper.API.Connection (
-    Connection
-  , listConnections
-  , idleConnections
-  ) where
+    -- * Exported Types
+      Connection
+
+    -- * HTTP Requests
+    , listConnections
+
+    -- * Filters
+    , idleConnections
+    ) where
 
 import Control.Applicative   ((<$>), (<*>), empty)
 import Control.Monad         (liftM)

@@ -11,10 +11,11 @@
 --
 
 module GameKeeper.Logger (
-    logDebug
-  , logInfo
-  , logError
-  ) where
+    -- * Severity Functions
+      logDebug
+    , logInfo
+    , logError
+    ) where
 
 import Prelude hiding (log)
 import Data.Time

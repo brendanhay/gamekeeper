@@ -11,9 +11,12 @@
 --
 
 module GameKeeper.API.Overview (
-    Overview
-  , showOverview
-  ) where
+    -- * Exported Types
+      Overview
+
+    -- * HTTP Requests
+    , showOverview
+    ) where
 
 import Prelude             hiding (show)
 import Control.Applicative ((<$>), (<*>), empty)

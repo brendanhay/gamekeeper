@@ -11,9 +11,12 @@
 --
 
 module GameKeeper.API.Exchange (
-    Exchange
-  , listExchanges
-  ) where
+    -- * Exported Types
+      Exchange
+
+    -- * HTTP Requests
+    , listExchanges
+    ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
 import Data.Aeson          (decode')

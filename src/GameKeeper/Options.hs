@@ -11,10 +11,12 @@
 --
 
 module GameKeeper.Options (
+    -- * Exported Types
       Options(..)
+
+    -- * Functions
     , parseOptions
     ) where
-
 
 import Control.Monad          (when)
 import Data.Version           (showVersion)

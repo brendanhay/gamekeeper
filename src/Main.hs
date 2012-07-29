@@ -11,22 +11,18 @@
 --
 
 module Main (
+    -- * Main Entry Point
       main
     ) where
 
 import Control.Concurrent
 import Control.Exception.Base (finally)
-import System.IO.Unsafe
-import GameKeeper.Http        (parseUri)
+import System.IO.Unsafe       (unsafePerformIO)
+import GameKeeper.API
+import GameKeeper.Http
 import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Options
-import GameKeeper.API.Overview
-import GameKeeper.API.Connection
-import GameKeeper.API.Channel
-import GameKeeper.API.Exchange
-import GameKeeper.API.Binding
-import GameKeeper.API.Queue
 
 --
 -- API

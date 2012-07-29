@@ -18,7 +18,7 @@ module GameKeeper.Http (
     , parseUri
     , getList
     , getBody
-  ) where
+    ) where
 
 import Text.Printf                 (printf)
 import Control.Monad.IO.Class      (liftIO)

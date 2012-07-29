@@ -11,9 +11,12 @@
 --
 
 module GameKeeper.API.Binding (
-    Binding
-  , listBindings
-  ) where
+    -- * Exported Types
+      Binding
+
+    -- * HTTP Requests
+    , listBindings
+    ) where
 
 import Control.Applicative   (empty)
 import Data.Aeson            (decode')
