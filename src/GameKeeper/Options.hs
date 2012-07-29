@@ -13,7 +13,7 @@
 module GameKeeper.Options (
     -- * Exported Types
       Options(..)
-    , Resource(..)
+    , Health(..)
 
     -- * Functions
     , parseOptions
@@ -27,10 +27,10 @@ import System.Environment       (getArgs, withArgs)
 import System.Exit              (ExitCode(..), exitWith)
 import GameKeeper.Metric hiding (measure)
 
-data Resource
-    = ConnectionResource
-    | QueueResource
-      deriving (Data, Typeable, Eq, Show)
+data Health = Health
+    { warning  :: Double
+    , critical :: Double
+    } deriving (Data, Typeable, Eq, Show)
 
 data Options
     = Measure
@@ -38,11 +38,22 @@ data Options
       , optDays :: Int
       , optSink :: SinkOptions
       }
-    | Clean
+    | PruneConnections
       { optUri      :: String
-      , optResource :: Resource
       , optDays     :: Int
-      , optDry      :: Bool
+      }
+    | PruneQueues
+      { optUri      :: String
+      }
+    | CheckQueue
+      { optUri      :: String
+      , optMessages :: Health
+      , optMemory   :: Health
+      }
+    | CheckNode
+      { optUri      :: String
+      , optMessages :: Health
+      , optMemory   :: Health
       }
     deriving (Data, Typeable, Show)
 
@@ -66,16 +77,21 @@ programInfo = programName ++ " version " ++ showVersion version
 copyright   = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
 
 parse :: Mode (CmdArgs Options)
-parse = cmdArgsMode $ modes [measure, clean]
+parse = cmdArgsMode $ modes [ measure
+                            , pruneConnections
+                            , pruneQueues
+                            , checkNode
+                            , checkQueue
+                            ]
     &= versionArg [explicit, name "version", name "v", summary programInfo]
     &= summary (programInfo ++ ", " ++ copyright)
     &= helpArg [explicit, name "help", name "h"]
     &= program programName
 
 validate :: Options -> IO Options
-validate opts@Measure{..} = return opts
-validate opts@Clean{..} = return opts
-
+validate opts = return opts
+-- validate opts@PruneConnections{..} = return opts
+-- validate opts@PruneQueues{..}      = return opts
     -- exitWhen (null optUri) "--uri cannot be blank"
     -- return opts
 
@@ -103,31 +119,73 @@ measure = Measure
         &= help "The sink (SINK: ganglia|graphite|statsd|stdout) to write metrics to (default: stdout)"
         &= explicit
     } &= name "measure"
-      &= help "Deliver statistics and metrics to the specified sink"
+      &= help "Deliver metrics to the specified sink"
 
-clean :: Options
-clean = Clean
+pruneConnections :: Options
+pruneConnections = PruneConnections
     { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
         &= explicit
-    , optResource = ConnectionResource
-        &= name "resource"
-        &= typ "RESOURCE"
-        &= help "The resource (RESOURCE: connection|queue) to cleanup (default: connection)"
-        &= explicit
-    , optDry = True
-        &= name "dry"
-        &= help "Dry mode (default: true)"
-        &= explicit
     , optDays = 1
         &= name "days"
-        &= help "The number of days inactivity after which a resource is considered idle (default: 1)"
+        &= help "The number of days inactivity after which a connection is considered idle (default: 1)"
         &= explicit
-    } &= name "clean"
-      &= help "Perform idle resource pruning"
+    } &= name "prune-connections"
+      &= help "Perform idle connection pruning"
       &= explicit
+
+pruneQueues :: Options
+pruneQueues = PruneQueues
+    { optUri = defaultUri
+        &= name "uri"
+        &= typ  "URI"
+        &= help "The uri (default: guest@localhost)"
+        &= explicit
+    } &= name "prune-queues"
+      &= help "Perform inactive queue pruning"
+      &= explicit
+
+checkNode :: Options
+checkNode = CheckNode
+    { optUri = defaultUri
+        &= name "uri"
+        &= typ  "URI"
+        &= help "The uri (default: guest@localhost)"
+        &= explicit
+    , optMessages = Health 1 2
+        &= name "messages"
+        &= typ  "WARN,CRIT"
+        &= help "The total number of messages (measurement: double)"
+        &= explicit
+    , optMemory = Health 1024 2028
+        &= name "memory"
+        &= typ  "WARN,CRIT"
+        &= help "The total amount of memory in use as reported by the VM (measurement: megabytes)"
+        &= explicit
+    } &= name "check-node"
+      &= help "Check general node health"
+
+checkQueue :: Options
+checkQueue = CheckQueue
+    { optUri = defaultUri
+        &= name "uri"
+        &= typ  "URI"
+        &= help "The uri (default: guest@localhost)"
+        &= explicit
+    , optMessages = Health 50000 100000
+        &= name "messages"
+        &= typ  "WARN,CRIT"
+        &= help "The total number of messages for a specific queue (measurement: double)"
+        &= explicit
+    , optMemory = Health 1024 2028
+        &= name "memory"
+        &= typ  "WARN,CRIT"
+        &= help "The amount of memory in use by a specific queue (measurement: megabytes)"
+        &= explicit
+    } &= name "check-queue"
+      &= help "Check a specific queue's health"
 
 --
 -- Defaults

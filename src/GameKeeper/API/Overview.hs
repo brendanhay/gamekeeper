@@ -12,7 +12,9 @@
 
 module GameKeeper.API.Overview (
     -- * Exported Types
-      Overview
+      Overview(..)
+    , Count(..)
+    , Rate(..)
 
     -- * HTTP Requests
     , showOverview
@@ -47,7 +49,8 @@ instance FromJSON Count where
         <$> o .: "messages"
         <*> o .: "messages_ready"
         <*> o .: "messages_unacknowledged"
-    parseJSON _ = empty
+    parseJSON (Array _)  = return $ Count 0 0 0
+    parseJSON _          = empty
 
 instance FromJSON Rate where
     parseJSON (Object o) = Rate
@@ -60,7 +63,8 @@ instance FromJSON Rate where
         rate k = do
             v <- o .:? k
             return . fromMaybe 0 $ v >>= parseMaybe (.: "rate")
-    parseJSON _ = empty
+    parseJSON (Array _)  = return $ Rate 0 0 0 0 0
+    parseJSON _          = empty
 
 instance FromJSON Overview where
     parseJSON (Object o) = Overview

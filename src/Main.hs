@@ -25,6 +25,8 @@ import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Options
 
+import qualified GameKeeper.Nagios as N
+
 --
 -- API
 --
@@ -55,14 +57,28 @@ mode Measure{..} = do
     close sink
   where
     uri = parseUri optUri
-mode Clean{..} | optResource == ConnectionResource = do
+
+mode PruneConnections{..} = do
     cs <- liftM idle (listConnections uri >>= idleConnections optDays)
     mapM_ (deleteConnection uri) cs
-               | optResource == QueueResource = do
+  where
+    uri = parseUri optUri
+
+mode PruneQueues{..} = do
     qs <- listQueues uri
     mapM_ (deleteQueue uri) . idle $ unusedQueues qs
   where
     uri = parseUri optUri
+
+mode CheckNode{..} = do
+    (Overview cnt _) <- showOverview uri
+    f cnt optMessages
+  where
+    uri = parseUri optUri
+    f n health | total n >= warning health  = N.warning
+               | total n >= critical health = N.critical
+               | otherwise                  = N.ok
+
 mode _ = logError msg >> error msg
   where
     msg = "Unsupported mode"
