@@ -26,16 +26,22 @@ import System.Environment     (getArgs, withArgs)
 import System.Exit            (ExitCode(..), exitWith)
 import GameKeeper.Metric
 
+data CleanType
+    = Connection
+    | Queue
+      deriving (Data, Typeable, Show)
+
 data Options
     = Measure
-      { optUri :: String
+      { optUri  :: String
       , optDays :: Int
       , optSink :: SinkOptions
       }
-    | Cleanup
-      { optUri  :: String
-      , optDry  :: Bool
-      , optDays :: Int
+    | Clean
+      { optUri      :: String
+      , optResource :: CleanType
+      , optDays     :: Int
+      , optDry      :: Bool
       }
     deriving (Data, Typeable, Show)
 
@@ -67,7 +73,7 @@ parse = cmdArgsMode $ modes [pushStatistics, cleanConnections]
 
 validate :: Options -> IO Options
 validate opts@Measure{..} = return opts
-validate opts@Cleanup{..} = return opts
+validate opts@Clean{..} = return opts
 
     -- exitWhen (null optUri) "--uri cannot be blank"
     -- return opts
@@ -88,33 +94,38 @@ pushStatistics = Measure
         &= explicit
     , optDays = 1
         &= name "days"
-        &= help "The number of days inactivity after which a connection is considered stale (default: 1)"
+        &= help "The number of days inactivity after which a resource is considered idle (default: 1)"
         &= explicit
     , optSink = SinkOptions Stdout "" ""
         &= name "sink"
         &= typ  "SINK,HOST,PORT"
-        &= help "The sink to write metrics to (default: stdout)"
+        &= help "The sink (SINK: ganglia|graphite|statsd|stdout) to write metrics to (default: stdout)"
         &= explicit
     } &= name "measure"
       &= help "Deliver statistics and metrics to the specified sink"
 
 cleanConnections :: Options
-cleanConnections = Cleanup
+cleanConnections = Clean
     { optUri = defaultUri
         &= name "uri"
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
         &= explicit
+    , optResource = Connection
+        &= name "resource"
+        &= typ "RESOURCE"
+        &= help "The resource (RESOURCE: connection|queue) to cleanup (default: connection)"
+        &= explicit
     , optDry = True
         &= name "dry"
         &= help "Dry mode (default: true)"
         &= explicit
-    , optDays = 30
+    , optDays = 1
         &= name "days"
-        &= help "The number of days to prune (default: 30)"
+        &= help "The number of days inactivity after which a resource is considered idle (default: 1)"
         &= explicit
-    } &= name "cleanup"
-      &= help "Perform stale connection cleanup"
+    } &= name "clean"
+      &= help "Perform idle resource pruning"
       &= explicit
 
 --

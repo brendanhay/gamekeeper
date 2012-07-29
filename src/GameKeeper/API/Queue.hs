@@ -19,6 +19,7 @@ module GameKeeper.API.Queue (
 
     -- * Filters
     , idleQueues
+    , unusedQueues
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
@@ -70,11 +71,17 @@ listQueues uri = getList uri "api/queues" query decode
     query    = "?columns=name,messages,consumers,memory"
 
 idleQueues :: [Queue] -> [(Bool, Queue)]
-idleQueues lst = zip (map (\Queue{..} -> consumers == 0) lst) lst
+idleQueues = filterQueues (\Queue{..} -> consumers == 0)
+
+unusedQueues :: [Queue] -> [(Bool, Queue)]
+unusedQueues = filterQueues (\Queue{..} -> consumers == 0 && messages == 0)
 
 --
 -- Private
 --
+
+filterQueues :: (Queue -> Bool) -> [Queue] -> [(Bool, Queue)]
+filterQueues f lst = zip (map f lst) lst
 
 megabytes :: Double -> Double
 megabytes = (!! 2) . iterate (/ 1024)

@@ -18,10 +18,10 @@ module GameKeeper.API.Binding (
     , listBindings
     ) where
 
-import Control.Applicative   (empty)
-import Data.Aeson            (decode')
+import Control.Applicative (empty)
+import Data.Aeson          (decode')
 import Data.Aeson.Types
-import Data.Vector           (Vector)
+import Data.Vector         (Vector)
 import GameKeeper.Http
 import GameKeeper.Metric
 
