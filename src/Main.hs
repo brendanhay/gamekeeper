@@ -21,13 +21,12 @@ import GameKeeper.Http        (parseUri)
 import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Options
-
-import qualified GameKeeper.API.Overview   as Over
-import qualified GameKeeper.API.Connection as Conn
-import qualified GameKeeper.API.Channel    as Chan
-import qualified GameKeeper.API.Exchange   as Exch
-import qualified GameKeeper.API.Binding    as Bind
-import qualified GameKeeper.API.Queue      as Queu
+import GameKeeper.API.Overview
+import GameKeeper.API.Connection
+import GameKeeper.API.Channel
+import GameKeeper.API.Exchange
+import GameKeeper.API.Binding
+import GameKeeper.API.Queue
 
 --
 -- API
@@ -46,17 +45,19 @@ main = do
 mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
-    forkAll [ Over.show uri >>= push sink
-            , Conn.list uri >>= Conn.idle optDays >>= push sink
-            , Chan.list uri >>= push sink
-            , Exch.list uri >>= mapM_ (push sink)
-            , Queu.list uri >>= mapM_ (push sink)
-            , Bind.list uri >>= push sink
+    forkAll [ showOverview uri >>= push sink
+            , listConnections uri >>= idleConnections optDays >>= push sink
+            , listChannels uri >>= push sink
+            , listExchanges uri >>= mapM_ (push sink)
+            , do qs <- listQueues uri
+                 push sink $ idleQueues qs
+                 mapM_ (push sink) qs
+            , listBindings uri >>= push sink
             ]
     wait
     close sink
   where
-    uri = parseUri optUri
+    uri  = parseUri optUri
 mode _ = logError msg >> error msg
   where
     msg = "Unsupported mode"
@@ -69,9 +70,7 @@ children :: MVar [MVar ()]
 children = unsafePerformIO (newMVar [])
 
 forkAll :: [IO ()] -> IO ()
-forkAll = mapM_ f
-  where
-    f g = fork g >>= logDebug . ("Spark: " ++) . show
+forkAll = mapM_ fork
 
 fork :: IO () -> IO ThreadId
 fork io = do

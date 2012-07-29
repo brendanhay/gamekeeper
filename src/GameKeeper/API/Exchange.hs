@@ -12,7 +12,7 @@
 
 module GameKeeper.API.Exchange (
     Exchange
-  , list
+  , listExchanges
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
@@ -42,15 +42,15 @@ instance FromJSON Exchange where
 
 instance Measurable Exchange where
     measure Exchange{..} =
-        [ Gauge group (bucket "exchange.rate" $ escape name) rate
+        [ Gauge group (bucket "exchange.rate" $ esc name) rate
         ]
 
 --
 -- API
 --
 
-list :: Uri -> IO [Exchange]
-list uri = getList uri "api/exchanges" query decode
+listExchanges :: Uri -> IO [Exchange]
+listExchanges uri = getList uri "api/exchanges" query decode
   where
     decode b = decode' b :: Maybe (Vector Exchange)
     query    = "?columns=name,message_stats_in.publish_details.rate"

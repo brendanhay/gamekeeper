@@ -12,7 +12,8 @@
 
 module GameKeeper.API.Queue (
     Queue
-  , list
+  , listQueues
+  , idleQueues
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
@@ -40,21 +41,31 @@ instance FromJSON Queue where
         <*> liftM megabytes (o .: "memory")
     parseJSON _ = empty
 
+instance Measurable [(Bool, Queue)] where
+    measure lst =
+        [ Gauge group "queue.total" $ len lst
+        , Gauge group "queue.idle" $ idle lst
+        ]
+
 instance Measurable Queue where
     measure Queue{..} =
-        [ Gauge group (bucket "queue.messages" $ escape name) messages
-        , Gauge group (bucket "queue.consumers" $ escape name) consumers
-        , Gauge group (bucket "queue.memory" $ escape name) memory
+        [ Gauge group (bucket "queue.messages" $ esc name) messages
+        , Gauge group (bucket "queue.consumers" $ esc name) consumers
+        , Gauge group (bucket "queue.memory" $ esc name) memory
         ]
 
 --
 -- API
 --
 
-list :: Uri -> IO [Queue]
-list uri = getList uri "api/queues" "?columns=name,messages,consumers,memory" decode
+listQueues :: Uri -> IO [Queue]
+listQueues uri = getList uri "api/queues" query decode
   where
     decode b = decode' b :: Maybe (Vector Queue)
+    query    = "?columns=name,messages,consumers,memory"
+
+idleQueues :: [Queue] -> [(Bool, Queue)]
+idleQueues lst = zip (map (\Queue{..} -> consumers == 0) lst) lst
 
 --
 -- Private

@@ -14,8 +14,8 @@
 
 module GameKeeper.API.Connection (
     Connection
-  , list
-  , idle
+  , listConnections
+  , idleConnections
   ) where
 
 import Control.Applicative   ((<$>), (<*>), empty)
@@ -50,34 +50,32 @@ instance FromJSON POSIXTime where
     parseJSON json = liftM msToSeconds (parseJSON json)
 
 instance Measurable [(Bool, Connection)] where
-    measure xs =
-        [ Gauge group "connection.total" $ len xs
-        , Gauge group "connection.stale" . len $ filter ((== True) . fst) xs
+    measure lst =
+        [ Gauge group "connection.total" $ len lst
+        , Gauge group "connection.idle" $ idle lst
         ]
-      where
-        len lst = fromIntegral $ length lst :: Double
 
 --
 -- API
 --
 
-list :: Uri -> IO [Connection]
-list uri = getList uri "api/connections" query decode
+listConnections :: Uri -> IO [Connection]
+listConnections uri = getList uri "api/connections" query decode
   where
     decode b = decode' b :: Maybe (Vector Connection)
     query    = "?columns=name,recv_oct_details.last_event,send_oct_details.last_event"
 
-idle :: Int -> [Connection] -> IO [(Bool, Connection)]
-idle days xs = do
+idleConnections :: Int -> [Connection] -> IO [(Bool, Connection)]
+idleConnections days lst = do
     n <- getPOSIXTime
-    return [(stale days n conn, conn) | conn <- xs]
+    return [(isIdle days n conn, conn) | conn <- lst]
 
 --
 -- Private
 --
 
-stale :: Int -> POSIXTime -> Connection -> Bool
-stale days time Connection{..} = all diff [received, sent]
+isIdle :: Int -> POSIXTime -> Connection -> Bool
+isIdle days time Connection{..} = all diff [received, sent]
   where
     diff (Just n) = time >= n + 86400 * fromIntegral days
     diff Nothing  = False

@@ -22,7 +22,9 @@ module GameKeeper.Metric (
     -- * Functions
     , group
     , bucket
-    , escape
+    , esc
+    , len
+    , idle
 
     -- * Re-exports
     , M.SinkType(..)
@@ -70,8 +72,14 @@ group = "rabbit"
 bucket :: M.Bucket -> M.Bucket -> M.Bucket
 bucket a b = BS.intercalate "." [a, b]
 
-escape :: M.Bucket -> M.Bucket
-escape = BS.map fn
+esc :: M.Bucket -> M.Bucket
+esc = BS.map fn
   where
     fn '.' = '/'
     fn c   = c
+
+len :: [a] -> Double
+len lst = fromIntegral $ length lst :: Double
+
+idle :: [(Bool, a)] -> Double
+idle = len . filter ((== True) . fst)

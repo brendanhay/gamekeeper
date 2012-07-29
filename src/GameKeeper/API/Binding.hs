@@ -12,7 +12,7 @@
 
 module GameKeeper.API.Binding (
     Binding
-  , list
+  , listBindings
   ) where
 
 import Control.Applicative   (empty)
@@ -30,15 +30,13 @@ instance FromJSON Binding where
     parseJSON _          = empty
 
 instance Measurable [Binding] where
-    measure xs = [Gauge group "bindings" len]
-      where
-        len = fromIntegral $ length xs :: Double
+    measure lst = [Gauge group "bindings" $ len lst]
 
 --
 -- API
 --
 
-list :: Uri -> IO [Binding]
-list uri = getList uri "api/bindings" "?columns=" decode
+listBindings :: Uri -> IO [Binding]
+listBindings uri = getList uri "api/bindings" "?columns=" decode
   where
     decode b = decode' b :: Maybe (Vector Binding)

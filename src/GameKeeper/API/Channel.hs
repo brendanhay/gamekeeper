@@ -12,7 +12,7 @@
 
 module GameKeeper.API.Channel (
     Channel
-  , list
+  , listChannels
   ) where
 
 import Data.Aeson       (decode')
@@ -58,14 +58,13 @@ instance Measurable [Channel] where
         ]
       where
         Count{..} = foldl increment (Count 0 0 0 0) xs
-        len lst   = fromIntegral $ length lst :: Double
 
 --
 -- API
 --
 
-list :: Uri -> IO [Channel]
-list uri = getList uri "api/channels" query decode
+listChannels :: Uri -> IO [Channel]
+listChannels uri = getList uri "api/channels" query decode
   where
     decode b = decode' b :: Maybe (Vector Channel)
     query    = "?columns=message_stats.publish,message_stats.deliver"

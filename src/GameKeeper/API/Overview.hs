@@ -12,7 +12,7 @@
 
 module GameKeeper.API.Overview (
     Overview
-  , show
+  , showOverview
   ) where
 
 import Prelude             hiding (show)
@@ -88,7 +88,7 @@ instance Measurable Overview where
 -- API
 --
 
-show :: Uri -> IO Overview
-show uri = do
+showOverview :: Uri -> IO Overview
+showOverview uri = do
     body <- getBody uri { uriPath = "api/overview" }
     return $ fromJust (decode' body :: Maybe Overview)
