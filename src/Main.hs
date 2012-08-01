@@ -60,6 +60,7 @@ mode Measure{..} = do
 
 mode PruneConnections{..} = do
     cs <- liftM idle (listConnections uri >>= idleConnections optDays)
+    putStrLn $ "Idle Connections Found: " ++ (show $ length cs)
     mapM_ (deleteConnection uri) cs
   where
     uri = parseUri optUri
