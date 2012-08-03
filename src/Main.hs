@@ -20,12 +20,10 @@ import Control.Exception.Base (finally)
 import Control.Monad          (liftM)
 import System.IO.Unsafe       (unsafePerformIO)
 import GameKeeper.API
-import GameKeeper.Http
 import GameKeeper.Logger
 import GameKeeper.Metric
-import GameKeeper.Options
-
-import qualified GameKeeper.Nagios as N
+import GameKeeper.Nagios
+import GameKeeper.ExplicitOptions
 
 --
 -- API
@@ -34,8 +32,9 @@ import qualified GameKeeper.Nagios as N
 main :: IO ()
 main = do
     opts <- parseOptions
-    logDebug $ "Mode: " ++ show opts
-    mode opts
+    case opts of
+        Left  s -> putStrLn s
+        Right o -> do logDebug $ "Mode: " ++ show o; mode o
 
 --
 -- Modes
@@ -44,40 +43,34 @@ main = do
 mode :: Options -> IO ()
 mode Measure{..} = do
     sink <- open optSink
-    forkAll [ showOverview uri >>= push sink
-            , listConnections uri >>= idleConnections optDays >>= push sink
-            , listChannels uri >>= push sink
-            , listExchanges uri >>= mapM_ (push sink)
-            , do qs <- listQueues uri
+    forkAll [ showOverview optUri >>= push sink
+            , listConnections optUri >>= idleConnections optDays >>= push sink
+            , listChannels optUri >>= push sink
+            , listExchanges optUri >>= mapM_ (push sink)
+            , do qs <- listQueues optUri
                  push sink $ idleQueues qs
                  mapM_ (push sink) qs
-            , listBindings uri >>= push sink
+            , listBindings optUri >>= push sink
             ]
     wait
     close sink
-  where
-    uri = parseUri optUri
 
 mode PruneConnections{..} = do
-    cs <- liftM idle (listConnections uri >>= idleConnections optDays)
+    cs <- liftM idle (listConnections optUri >>= idleConnections optDays)
     putStrLn $ "Idle Connections Found: " ++ (show $ length cs)
-    mapM_ (deleteConnection uri) cs
-  where
-    uri = parseUri optUri
+    mapM_ (deleteConnection optUri) cs
 
 mode PruneQueues{..} = do
-    qs <- listQueues uri
-    mapM_ (deleteQueue uri) . idle $ unusedQueues qs
-  where
-    uri = parseUri optUri
+    qs <- listQueues optUri
+    mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = do
-    (Overview cnt _) <- showOverview $ parseUri optUri
+    (Overview cnt _) <- showOverview optUri
     f cnt optMessages
   where
-    f n Health{..} | total n >= warning  = N.warning
-                   | total n >= critical = N.critical
-                   | otherwise           = N.ok
+    f n Health{..} | total n >= healthWarn = warning
+                   | total n >= healthCrit = critical
+                   | otherwise             = ok
 
 mode _ = logError msg >> error msg
   where

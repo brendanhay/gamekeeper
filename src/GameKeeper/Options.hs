@@ -132,7 +132,7 @@ pruneConnections = PruneConnections
         &= name "days"
         &= help "The number of days inactivity after which a connection is considered idle (default: 1)"
         &= explicit
-    } &= name "prune-connections"
+    } &= name "prune connections"
       &= help "Perform idle connection pruning"
       &= explicit
 
@@ -143,7 +143,7 @@ pruneQueues = PruneQueues
         &= typ  "URI"
         &= help "The uri (default: guest@localhost)"
         &= explicit
-    } &= name "prune-queues"
+    } &= name "prune queues"
       &= help "Perform inactive queue pruning"
       &= explicit
 
@@ -164,7 +164,7 @@ checkNode = CheckNode
         &= typ  "WARN,CRIT"
         &= help "The total amount of memory in use as reported by the VM (measurement: megabytes)"
         &= explicit
-    } &= name "check-node"
+    } &= name "check node"
       &= help "Check general node health"
 
 checkQueue :: Options
@@ -184,7 +184,7 @@ checkQueue = CheckQueue
         &= typ  "WARN,CRIT"
         &= help "The amount of memory in use by a specific queue (measurement: megabytes)"
         &= explicit
-    } &= name "check-queue"
+    } &= name "check queue"
       &= help "Check a specific queue's health"
 
 --
