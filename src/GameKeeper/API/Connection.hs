@@ -87,7 +87,8 @@ idleConnections days lst = do
 
 -- FIXME: Purging connections should be done at the channel level
 -- since the assumption a connection is idle by received/sent events
--- at the connection level doesn't seem to hold
+-- at the connection level doesn't seem to hold - specifically for
+-- connections which don't contain a receiving channel.
 
 isIdle :: Int -> POSIXTime -> Connection -> Bool
 isIdle days time Connection{..} = all diff [received, sent]
