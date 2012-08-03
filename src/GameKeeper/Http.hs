@@ -23,6 +23,7 @@ module GameKeeper.Http (
 
 import Text.Printf                 (printf)
 import Control.Monad.IO.Class      (liftIO)
+import Data.Data                   (Data, Typeable)
 import Data.Maybe                  (fromJust)
 import Data.Vector                 (Vector, toList)
 import Network.HTTP.Conduit hiding (queryString, path)
@@ -42,7 +43,7 @@ data Uri = Uri
     , uriPath    :: BS.ByteString
     , uriQuery   :: BS.ByteString
     , uriFrag    :: BS.ByteString
-    } deriving (Show)
+    } deriving (Data, Typeable, Show)
 
 --
 -- API

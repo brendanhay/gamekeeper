@@ -34,9 +34,9 @@ data Health = Health
 
 data Options
     = Measure
-      { optUri  :: String
-      , optDays :: Int
-      , optSink :: SinkOptions
+      { optUri      :: String
+      , optDays     :: Int
+      , optSink     :: SinkOptions
       }
     | PruneConnections
       { optUri      :: String
