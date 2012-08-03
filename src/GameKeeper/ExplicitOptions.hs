@@ -23,7 +23,7 @@ module GameKeeper.ExplicitOptions (
 
 import Data.Version                    (showVersion)
 import Paths_gamekeeper                (version)
-import System.Console.CmdArgs.Explicit
+import System.Console.CmdArgs.Explicit hiding (modes)
 import System.Environment              (getArgs)
 import GameKeeper.Http
 import GameKeeper.Metric        hiding (measure)
@@ -34,7 +34,7 @@ data Health = Health
     } deriving (Eq, Show)
 
 data Options
-    = Help (Mode Options)
+    = Help SubMode
     | Version
     | Measure
       { optUri      :: Uri
@@ -60,6 +60,14 @@ data Options
       }
     deriving (Show)
 
+data SubMode = SubMode
+    { name  :: String
+    , def   :: Options
+    , help  :: String
+    , flags :: [Flag Options]
+    , modes :: [SubMode]
+    } deriving (Show)
+
 --
 -- API
 --
@@ -67,8 +75,8 @@ data Options
 parseOptions :: IO (Either String Options)
 parseOptions = do
     args <- getArgs
-    return $ case processValue program args of
-        (Help m) -> Left . show $ helpText [] HelpFormatOne m
+    return $ case processValue (expandMode program) args of
+        (Help m) -> Left . show $ helpText [] HelpFormatOne (expandMode m)
         Version  -> Left programInfo
         opts     -> Right opts
 
@@ -102,90 +110,96 @@ days = 30
 -- Modes
 --
 
-measure :: Mode Options
-measure = child
-    "measure"
-    (Measure uri days (SinkOptions Stdout "" ""))
-    "Measure and emit metrics to the specified sink"
-    [uriFlag]
+measure :: SubMode
+measure = subMode
+    { name  = "measure"
+    , def   = Measure uri days (SinkOptions Stdout "" "")
+    , help  = "Measure and emit metrics to the specified sink"
+    , flags = [uriFlag]
+    }
 
-pruneConnections :: Mode Options
-pruneConnections = child
-    "connections"
-    (PruneConnections uri days)
-    "Perform idle connection pruning"
-    [uriFlag]
+pruneConnections :: SubMode
+pruneConnections = subMode
+    { name  = "connections"
+    , def   = PruneConnections uri days
+    , help  = "Perform idle connection pruning"
+    , flags = [uriFlag]
+    }
 
-pruneQueues :: Mode Options
-pruneQueues = child
-    "queues"
-    (PruneQueues uri)
-    "Perform inactive queue pruning"
-    [uriFlag]
+pruneQueues :: SubMode
+pruneQueues = subMode
+    { name  = "queues"
+    , def   = PruneQueues uri
+    , help  = "Perform inactive queue pruning"
+    , flags = [uriFlag]
+    }
 
-prune :: Mode Options
-prune = parent
-    "prune"
-    (Help prune)
-     "Prune mode"
-    []
-    [pruneConnections, pruneQueues]
+prune :: SubMode
+prune = subMode
+    { name  = "prune"
+    , def   = Help prune
+    , help  = "Prune mode"
+    , modes = [pruneConnections, pruneQueues]
+    }
 
-checkNode :: Mode Options
-checkNode = child
-    "node"
-    (CheckNode uri health health)
-    "Check a node's memory and message backlog"
-    [uriFlag]
+checkNode :: SubMode
+checkNode = subMode
+    { name  = "node"
+    , def   = CheckNode uri health health
+    , help  = "Check a node's memory and message backlog"
+    , flags = [uriFlag]
+    }
 
-checkQueue :: Mode Options
-checkQueue = child
-    "queue"
-    (CheckQueue uri health health)
-    "Check a queue's memory and message backlog"
-    [ uriFlag
-    , flagReq ["mem-warning"] (\s o -> Right $ o { optMemory = Health 0 0 })
-      "MB" "The warning threshold for memory usage"
-    , flagReq ["mem-critical"] (\s o -> Right $ o { optMemory = Health 0 0 })
-      "MB" "The critical threshold for memory usage"
-    ]
+checkQueue :: SubMode
+checkQueue = subMode
+    { name  = "queue"
+    , def   = CheckQueue uri health health
+    , help  = "Check a queue's memory and message backlog"
+    , flags = [ uriFlag
+              , flagReq ["mem-warning"] (\s o -> Right $ o { optMemory = Health 0 0 })
+                "MB" "The warning threshold for memory usage"
+              , flagReq ["mem-critical"] (\s o -> Right $ o { optMemory = Health 0 0 })
+                "MB" "The critical threshold for memory usage"
+              ]
+    }
 
-check :: Mode Options
-check = parent
-    "check"
-    (Help check)
-    "Check stuff"
-    []
-    [checkNode, checkQueue]
+check :: SubMode
+check = subMode
+    { name  = "check"
+    , def   = Help check
+    , help  = "Check stuff"
+    , modes = [checkNode, checkQueue]
+    }
 
-program :: Mode Options
-program = parent
-    programName
-    (Help program)
-    "Program help"
-    [flagVersion (\_ -> Version)]
-    [measure, prune, check]
+program :: SubMode
+program = subMode
+    { name  = programName
+    , def   = Help program
+    , help  = "Program help"
+    , flags = [flagVersion (\_ -> Version)]
+    , modes = [measure, prune, check]
+    }
 
 --
 -- Mode Constructors
 --
 
-parent :: Name -> Options -> Help -> [Flag Options] -> [Mode Options] -> Mode Options
-parent name value help flags groups = mode'
+subMode :: SubMode
+subMode = SubMode "" (Help program) "" [] []
+
+expandMode :: SubMode -> Mode Options
+expandMode m@SubMode{..} | null modes = child
+                         | otherwise  = parent
   where
-    mode' = (modeEmpty value)
+    errFlag = flagArg (\x _ -> Left $ "Unexpected argument " ++ x) ""
+    child   = mode name def help errFlag $ appendDefaults m flags
+    parent  = (modeEmpty def)
         { modeNames      = [name]
         , modeHelp       = help
         , modeArgs       = ([], Nothing)
-        , modeGroupFlags = toGroup $ defaultFlags mode' flags
-        , modeGroupModes = toGroup groups
+        , modeGroupFlags = toGroup $ appendDefaults m flags
+        , modeGroupModes = toGroup $ map expandMode modes
         }
-
-child :: Name -> Options -> Help -> [Flag Options] -> Mode Options
-child name value help flags = mode'
-  where
-    mode' = mode name value help err $ defaultFlags mode' flags
-    err = flagArg (\x _ -> Left $ "Unexpected argument " ++ x) ""
 
 --
 -- Flags
@@ -199,5 +213,5 @@ uriFlag = flagReq ["uri"] (\s o -> Right $ o { optUri = parseUri s }) "URI" help
 helpFlag :: a -> Flag a
 helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"
 
-defaultFlags :: Mode Options -> [Flag Options] -> [Flag Options]
-defaultFlags m = (++ [helpFlag $ Help m])
+appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
+appendDefaults m = (++ [helpFlag $ Help m])
