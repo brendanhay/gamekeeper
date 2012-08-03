@@ -163,7 +163,9 @@ child name value help flags = mode'
 --
 
 uriFlag :: Flag Options
-uriFlag = flagReq ["uri"] (\x b -> Right $ b { optUri = parseUri x }) "URI" "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
+uriFlag = flagReq ["uri"] (\x b -> Right $ b { optUri = parseUri x }) "URI" help
+  where
+    help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
 
 helpFlag :: a -> Flag a
 helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"

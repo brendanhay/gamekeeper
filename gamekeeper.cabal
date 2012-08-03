@@ -24,7 +24,7 @@ source-repository head
   location: git://github.com/brendanhay/gamekeeper.git
 
 executable gamekeeper
-  main-is:          Main.hs
+  main-is:          GameKeeper/ExplicitOptions.hs
 
   hs-source-dirs:   src
 
