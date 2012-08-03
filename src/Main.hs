@@ -66,16 +66,13 @@ mode PruneConnections{..} = do
     uri = parseUri optUri
 
 mode PruneQueues{..} = do
-    qs <- listQueues uri
+    qs <- listQueues $ parseUri optUri
     mapM_ (deleteQueue uri) . idle $ unusedQueues qs
-  where
-    uri = parseUri optUri
 
 mode CheckNode{..} = do
-    (Overview cnt _) <- showOverview uri
+    (Overview cnt _) <- showOverview $ parseUri optUri
     f cnt optMessages
   where
-    uri = parseUri optUri
     f n Health{..} | total n >= warning  = N.warning
                    | total n >= critical = N.critical
                    | otherwise           = N.ok

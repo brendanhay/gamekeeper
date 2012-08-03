@@ -95,21 +95,21 @@ measure :: Mode Options
 measure = child
     "measure"
     (Measure uri days (SinkOptions Stdout "" ""))
-    "Measure stuff"
+    "Measure and emit metrics to the specified sink"
     [uriFlag]
 
 pruneConnections :: Mode Options
 pruneConnections = child
     "connections"
     (PruneConnections uri days)
-    "Prune connections"
+    "Perform idle connection pruning"
     [uriFlag]
 
 pruneQueues :: Mode Options
 pruneQueues = child
     "queues"
     (PruneQueues uri)
-    "Prune queues"
+    "Perform inactive queue pruning"
     [uriFlag]
 
 prune :: Mode Options
@@ -124,21 +124,26 @@ checkNode :: Mode Options
 checkNode = child
     "node"
     (CheckNode uri health health)
-    "Check node"
+    "Check a node's memory and message backlog"
     [uriFlag]
 
 checkQueue :: Mode Options
 checkQueue = child
     "queue"
     (CheckQueue uri health health)
-    "Check queue"
-    [uriFlag]
+    "Check a queue's memory and message backlog"
+    [ uriFlag
+    , flagReq ["mem-warning"] (\s o -> Right $ o { optMemory = (Health 0 0) })
+      "MB" "The warning threshold for memory usage"
+    , flagReq ["mem-critical"] (\s o -> Right $ o { optMemory = (Health 0 0) })
+      "MB" "The critical threshold for memory usage"
+    ]
 
 check :: Mode Options
 check = parent
     "check"
     (Help check)
-    "Check mode"
+    "Check stuff"
     []
     [checkNode, checkQueue]
 
@@ -151,7 +156,7 @@ program = parent
     [measure, prune, check]
 
 --
--- Constructors
+-- Mode Constructors
 --
 
 parent :: Name -> Options -> Help -> [Flag Options] -> [Mode Options] -> Mode Options
@@ -176,7 +181,7 @@ child name value help flags = mode'
 --
 
 uriFlag :: Flag Options
-uriFlag = flagReq ["uri"] (\x b -> Right $ b { optUri = parseUri x }) "URI" help
+uriFlag = flagReq ["uri"] (\s o -> Right $ o { optUri = parseUri s }) "URI" help
   where
     help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
 
