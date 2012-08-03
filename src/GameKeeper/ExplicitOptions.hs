@@ -75,27 +75,40 @@ main = do
         opts -> print opts
 
 --
+-- Defaults
+--
+
+uri :: Uri
+uri = parseUri "http://guest:guest@127.0.0.1:55672/"
+
+health :: Health
+health = Health 1 10
+
+days :: Int
+days = 30
+
+--
 -- Modes
 --
 
 measure :: Mode Options
 measure = child
     "measure"
-    (Measure defUri defDays (SinkOptions Stdout "" ""))
+    (Measure uri days (SinkOptions Stdout "" ""))
     "Measure stuff"
     [uriFlag]
 
 pruneConnections :: Mode Options
 pruneConnections = child
     "connections"
-    (PruneConnections defUri defDays)
+    (PruneConnections uri days)
     "Prune connections"
     [uriFlag]
 
 pruneQueues :: Mode Options
 pruneQueues = child
     "queues"
-    (PruneQueues defUri)
+    (PruneQueues uri)
     "Prune queues"
     [uriFlag]
 
@@ -110,14 +123,14 @@ prune = parent
 checkNode :: Mode Options
 checkNode = child
     "node"
-    (CheckNode defUri defHealth defHealth)
+    (CheckNode uri health health)
     "Check node"
     [uriFlag]
 
 checkQueue :: Mode Options
 checkQueue = child
     "queue"
-    (CheckQueue defUri defHealth defHealth)
+    (CheckQueue uri health health)
     "Check queue"
     [uriFlag]
 
@@ -148,14 +161,14 @@ parent name value help flags groups = mode'
         { modeNames      = [name]
         , modeHelp       = help
         , modeArgs       = ([], Nothing)
-        , modeGroupFlags = toGroup $ defFlags mode' flags
+        , modeGroupFlags = toGroup $ defaultFlags mode' flags
         , modeGroupModes = toGroup groups
         }
 
 child :: Name -> Options -> Help -> [Flag Options] -> Mode Options
 child name value help flags = mode'
   where
-    mode' = mode name value help err $ defFlags mode' flags
+    mode' = mode name value help err $ defaultFlags mode' flags
     err = flagArg (\x _ -> Left $ "Unexpected argument " ++ x) ""
 
 --
@@ -170,18 +183,5 @@ uriFlag = flagReq ["uri"] (\x b -> Right $ b { optUri = parseUri x }) "URI" help
 helpFlag :: a -> Flag a
 helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"
 
---
--- Defaults
---
-
-defUri :: Uri
-defUri = parseUri "http://guest:guest@127.0.0.1:55672/"
-
-defHealth :: Health
-defHealth = Health 1 10
-
-defFlags :: Mode Options -> [Flag Options] -> [Flag Options]
-defFlags m = (++ [helpFlag $ Help m])
-
-defDays :: Int
-defDays = 30
+defaultFlags :: Mode Options -> [Flag Options] -> [Flag Options]
+defaultFlags m = (++ [helpFlag $ Help m])
