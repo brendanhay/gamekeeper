@@ -30,11 +30,9 @@ import GameKeeper.ExplicitOptions
 --
 
 main :: IO ()
-main = do
-    opts <- parseOptions
-    case opts of
-        Left  s -> putStrLn s
-        Right o -> do logDebug $ "Mode: " ++ show o; mode o
+main = parseOptions >>= either putStrLn run
+  where
+    run o = do logDebug $ "Mode: " ++ show o; mode o
 
 --
 -- Modes
@@ -57,7 +55,7 @@ mode Measure{..} = do
 
 mode PruneConnections{..} = do
     cs <- liftM idle (listConnections optUri >>= idleConnections optDays)
-    putStrLn $ "Idle Connections Found: " ++ (show $ length cs)
+    putStrLn $ "Idle Connections Found: " ++ show (length cs)
     mapM_ (deleteConnection optUri) cs
 
 mode PruneQueues{..} = do

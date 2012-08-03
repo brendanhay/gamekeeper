@@ -144,9 +144,9 @@ checkQueue = child
     (CheckQueue uri health health)
     "Check a queue's memory and message backlog"
     [ uriFlag
-    , flagReq ["mem-warning"] (\s o -> Right $ o { optMemory = (Health 0 0) })
+    , flagReq ["mem-warning"] (\s o -> Right $ o { optMemory = Health 0 0 })
       "MB" "The warning threshold for memory usage"
-    , flagReq ["mem-critical"] (\s o -> Right $ o { optMemory = (Health 0 0) })
+    , flagReq ["mem-critical"] (\s o -> Right $ o { optMemory = Health 0 0 })
       "MB" "The critical threshold for memory usage"
     ]
 
