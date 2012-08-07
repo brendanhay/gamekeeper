@@ -223,6 +223,9 @@ expandMode m@SubMode{..} | null modes = child
 -- Flags
 --
 
+appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
+appendDefaults m = (++ [helpFlag $ Help m])
+
 uriFlag :: Flag Options
 uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help
   where
@@ -230,9 +233,6 @@ uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help
 
 helpFlag :: a -> Flag a
 helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"
-
-appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
-appendDefaults m = (++ [helpFlag $ Help m])
 
 daysFlag :: String -> Flag Options
 daysFlag = flagReq ["days"] (\s o -> Right $ o { optDays = read s :: Int }) "INT"
