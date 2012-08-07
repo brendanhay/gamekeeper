@@ -129,15 +129,9 @@ measure = subMode
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [ uriFlag
               , daysFlag "Number of days before a connection is considered stale"
-              , flagReq ["sink"] sink "SINK,HOST,PORT" "Sink options"
+              , sinkFlag "Sink options"
               ]
     }
-  where
-    sink s o = Right o
-        { optSink = case splitOn "," s of
-              (x:y:z:_) -> SinkOptions (read x :: SinkType) y (read z :: Word16)
-              _         -> error $ "Failed to parse SinkOptions from SINK,HOST,PORT from: " ++ s
-        }
 
 pruneConnections :: SubMode
 pruneConnections = subMode
@@ -249,3 +243,12 @@ healthFlag name = flagReq [name] upd
     upd s o = Right o { optMemory = Health warn crit }
       where
         [warn, crit] = map read $ splitOn "," s :: [Double]
+
+sinkFlag :: String -> Flag Options
+sinkFlag = flagReq ["sink"] upd "SINK,HOST,PORT"
+  where
+    upd s o = Right o
+        { optSink = case splitOn "," s of
+              (x:y:z:_) -> SinkOptions (read x :: SinkType) y (read z :: Word16)
+              _         -> error $ "Failed to parse SinkOptions from SINK,HOST,PORT from: " ++ s
+        }
