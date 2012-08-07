@@ -129,7 +129,7 @@ measure = subMode
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [ uriFlag
               , daysFlag "Number of days before a connection is considered stale"
-              , sinkFlag "Sink options"
+              , sinkFlag "Sink options describing the type and host/port combination"
               ]
     }
 
