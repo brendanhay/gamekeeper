@@ -125,7 +125,7 @@ tenGigabytes = 10240
 measure :: SubMode
 measure = subMode
     { name  = "measure"
-    , def   = Measure uri oneMonth (SinkOptions Stdout "" 0)
+    , def   = Measure uri oneMonth defaultSinkOpts
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [ uriFlag
               , daysFlag "Number of days before a connection is considered stale"

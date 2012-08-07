@@ -17,6 +17,7 @@ module GameKeeper.Metric (
       SinkOptions(..)
 
     -- * Sink Constructor
+    , defaultSinkOpts
     , open
 
     -- * Functions
@@ -52,6 +53,9 @@ data SinkOptions = SinkOptions
 --
 -- API
 --
+
+defaultSinkOpts :: SinkOptions
+defaultSinkOpts = SinkOptions M.Stdout "" 0
 
 open :: SinkOptions -> IO M.AnySink
 open SinkOptions{..} = sink
