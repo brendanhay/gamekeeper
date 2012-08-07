@@ -100,11 +100,21 @@ programInfo = concat
 uri :: Uri
 uri = parseUri "http://guest:guest@127.0.0.1:55672/"
 
-health :: Health
-health = Health 1 10
+health, messages, memory :: Double -> Health
+health crit = Health (fromInteger . floor $ crit / 2) crit
+messages    = health
+memory      = health
 
-days :: Int
-days = 30
+oneMonth :: Int
+oneMonth = 30
+
+quarterMillion, fiftyMillion :: Double
+quarterMillion = 250000
+fiftyMillion   = 50000000
+
+twoGigabytes, tenGigabytes :: Double
+twoGigabytes = 2048
+tenGigabytes = 10240
 
 --
 -- Modes
@@ -113,7 +123,7 @@ days = 30
 measure :: SubMode
 measure = subMode
     { name  = "measure"
-    , def   = Measure uri days (SinkOptions Stdout "" "")
+    , def   = Measure uri oneMonth (SinkOptions Stdout "" "")
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [uriFlag]
     }
@@ -121,7 +131,7 @@ measure = subMode
 pruneConnections :: SubMode
 pruneConnections = subMode
     { name  = "connections"
-    , def   = PruneConnections uri days
+    , def   = PruneConnections uri oneMonth
     , help  = "Perform idle connection pruning"
     , flags = [uriFlag]
     }
@@ -145,7 +155,7 @@ prune = subMode
 checkNode :: SubMode
 checkNode = subMode
     { name  = "node"
-    , def   = CheckNode uri health health
+    , def   = CheckNode uri (messages fiftyMillion) (memory tenGigabytes)
     , help  = "Check a node's memory and message backlog"
     , flags = [uriFlag]
     }
@@ -153,7 +163,7 @@ checkNode = subMode
 checkQueue :: SubMode
 checkQueue = subMode
     { name  = "queue"
-    , def   = CheckQueue uri health health
+    , def   = CheckQueue uri (messages quarterMillion) (messages twoGigabytes)
     , help  = "Check a queue's memory and message backlog"
     , flags = [ uriFlag
               , flagReq ["mem-warning"] (\s o -> Right $ o { optMemory = Health 0 0 })
