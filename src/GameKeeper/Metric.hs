@@ -46,13 +46,8 @@ import qualified Network.Metric.Sink.Handle as H
 data SinkOptions = SinkOptions
     { sinkType :: M.SinkType
     , sinkHost :: String
-    , sinkPort :: String
-    } deriving (Data, Typeable, Show)
-
--- Temporary until network-metrics is updated
-instance Eq M.SinkType where
-    M.Stdout == M.Stdout = True
-    _ == _               = False
+    , sinkPort :: Word16
+    } deriving (Data, Typeable, Read, Show)
 
 --
 -- API
@@ -64,7 +59,7 @@ open SinkOptions{..} = sink
     sink | sinkType == M.Stdout = return . M.AnySink $ H.SinkHandle host logInfo
          | otherwise            = M.open sinkType host sinkHost port
     host = "localhost"
-    port = PortNum (read sinkPort :: Word16)
+    port = PortNum sinkPort
 
 group :: M.Group
 group = "rabbit"

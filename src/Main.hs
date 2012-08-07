@@ -40,6 +40,7 @@ main = parseOptions >>= either putStrLn run
 
 mode :: Options -> IO ()
 mode Measure{..} = do
+    print optSink
     sink <- open optSink
     forkAll [ showOverview optUri >>= push sink
             , listConnections optUri >>= idleConnections optDays >>= push sink

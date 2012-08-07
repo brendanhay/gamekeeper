@@ -22,6 +22,7 @@ module GameKeeper.Options (
     ) where
 
 import Data.List.Split                        (splitOn)
+import Data.Word                              (Word16)
 import Data.Version                           (showVersion)
 import Paths_gamekeeper                       (version)
 import System.Console.CmdArgs.Explicit hiding (modes)
@@ -124,12 +125,19 @@ tenGigabytes = 10240
 measure :: SubMode
 measure = subMode
     { name  = "measure"
-    , def   = Measure uri oneMonth (SinkOptions Stdout "" "")
+    , def   = Measure uri oneMonth (SinkOptions Stdout "" 0)
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [ uriFlag
               , daysFlag "Number of days before a connection is considered stale"
+              , flagReq ["sink"] sink "SINK,HOST,PORT" "Sink options"
               ]
     }
+  where
+    sink s o = Right o
+        { optSink = case splitOn "," s of
+              (x:y:z:_) -> SinkOptions (read x :: SinkType) y (read z :: Word16)
+              _         -> error $ "Failed to parse SinkOptions from SINK,HOST,PORT from: " ++ s
+        }
 
 pruneConnections :: SubMode
 pruneConnections = subMode
@@ -222,7 +230,7 @@ expandMode m@SubMode{..} | null modes = child
 --
 
 uriFlag :: Flag Options
-uriFlag = flagReq ["uri"] (\s o -> Right $ o { optUri = parseUri s }) "URI" help
+uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help
   where
     help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
 
