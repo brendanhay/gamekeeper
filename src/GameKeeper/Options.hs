@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 -- |
 -- Module      : GameKeeper.Options
 -- Copyright   : (c) 2012 Brendan Hay <brendan@soundcloud.com>
@@ -19,177 +21,223 @@ module GameKeeper.Options (
     , parseOptions
     ) where
 
-import Control.Monad            (when)
-import Data.Version             (showVersion)
-import Paths_gamekeeper         (version)
-import System.Console.CmdArgs
-import System.Environment       (getArgs, withArgs)
-import System.Exit              (ExitCode(..), exitWith)
-import GameKeeper.Metric hiding (measure)
+import Data.List.Split                        (splitOn)
+import Data.Version                           (showVersion)
+import Paths_gamekeeper                       (version)
+import System.Console.CmdArgs.Explicit hiding (modes)
+import System.Environment                     (getArgs)
+import GameKeeper.Http
+import GameKeeper.Metric               hiding (measure)
 
 data Health = Health
-    { warning  :: Double
-    , critical :: Double
-    } deriving (Data, Typeable, Eq, Show)
+    { healthWarn :: Double
+    , healthCrit :: Double
+    } deriving (Eq, Show)
 
 data Options
-    = Measure
-      { optUri      :: String
+    = Help SubMode
+    | Version
+    | Measure
+      { optUri      :: Uri
       , optDays     :: Int
       , optSink     :: SinkOptions
       }
     | PruneConnections
-      { optUri      :: String
+      { optUri      :: Uri
       , optDays     :: Int
       }
     | PruneQueues
-      { optUri      :: String
-      }
-    | CheckQueue
-      { optUri      :: String
-      , optMessages :: Health
-      , optMemory   :: Health
+      { optUri      :: Uri
       }
     | CheckNode
-      { optUri      :: String
+      { optUri      :: Uri
       , optMessages :: Health
       , optMemory   :: Health
       }
-    deriving (Data, Typeable, Show)
+    | CheckQueue
+      { optUri      :: Uri
+      , optMessages :: Health
+      , optMemory   :: Health
+      }
+    deriving (Show)
+
+data SubMode = SubMode
+    { name  :: String
+    , def   :: Options
+    , help  :: String
+    , flags :: [Flag Options]
+    , modes :: [SubMode]
+    } deriving (Show)
 
 --
 -- API
 --
 
-parseOptions :: IO Options
+parseOptions :: IO (Either String Options)
 parseOptions = do
-    raw  <- getArgs
-    opts <- (if null raw then withArgs ["--help"] else id) $ cmdArgsRun parse
-    validate opts
+    args <- getArgs
+    return $ case processValue (expandMode program) args of
+        (Help m) -> Left . show $ helpText [] HelpFormatOne (expandMode m)
+        Version  -> Left programInfo
+        opts     -> Right opts
 
 --
--- Parsing
+-- Info
 --
 
-programName, programInfo, copyright :: String
+programName, programInfo :: String
 programName = "gamekeeper"
-programInfo = programName ++ " version " ++ showVersion version
-copyright   = "(C) Brendan Hay <brendan@soundcloud.com> 2012"
-
-parse :: Mode (CmdArgs Options)
-parse = cmdArgsMode $ modes [ measure
-                            , pruneConnections
-                            , pruneQueues
-                            , checkNode
-                            , checkQueue
-                            ]
-    &= versionArg [explicit, name "version", name "v", summary programInfo]
-    &= summary (programInfo ++ ", " ++ copyright)
-    &= helpArg [explicit, name "help", name "h"]
-    &= program programName
-
-validate :: Options -> IO Options
-validate opts = return opts
--- validate opts@PruneConnections{..} = return opts
--- validate opts@PruneQueues{..}      = return opts
-    -- exitWhen (null optUri) "--uri cannot be blank"
-    -- return opts
-
-exitWhen :: Bool -> String -> IO ()
-exitWhen p msg = when p $ putStrLn msg >> exitWith (ExitFailure 1)
-
---
--- Modes
---
-
-measure :: Options
-measure = Measure
-    { optUri = defaultUri
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: guest@localhost)"
-        &= explicit
-    , optDays = 1
-        &= name "days"
-        &= help "The number of days inactivity after which a resource is considered idle (default: 1)"
-        &= explicit
-    , optSink = SinkOptions Stdout "" ""
-        &= name "sink"
-        &= typ  "SINK,HOST,PORT"
-        &= help "The sink (SINK: ganglia|graphite|statsd|stdout) to write metrics to (default: stdout)"
-        &= explicit
-    } &= name "measure"
-      &= help "Deliver metrics to the specified sink"
-
-pruneConnections :: Options
-pruneConnections = PruneConnections
-    { optUri = defaultUri
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: guest@localhost)"
-        &= explicit
-    , optDays = 1
-        &= name "days"
-        &= help "The number of days inactivity after which a connection is considered idle (default: 1)"
-        &= explicit
-    } &= name "prune connections"
-      &= help "Perform idle connection pruning"
-      &= explicit
-
-pruneQueues :: Options
-pruneQueues = PruneQueues
-    { optUri = defaultUri
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: guest@localhost)"
-        &= explicit
-    } &= name "prune queues"
-      &= help "Perform inactive queue pruning"
-      &= explicit
-
-checkNode :: Options
-checkNode = CheckNode
-    { optUri = defaultUri
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: guest@localhost)"
-        &= explicit
-    , optMessages = Health 1 2
-        &= name "messages"
-        &= typ  "WARN,CRIT"
-        &= help "The total number of messages (measurement: double)"
-        &= explicit
-    , optMemory = Health 1024 2028
-        &= name "memory"
-        &= typ  "WARN,CRIT"
-        &= help "The total amount of memory in use as reported by the VM (measurement: megabytes)"
-        &= explicit
-    } &= name "check node"
-      &= help "Check general node health"
-
-checkQueue :: Options
-checkQueue = CheckQueue
-    { optUri = defaultUri
-        &= name "uri"
-        &= typ  "URI"
-        &= help "The uri (default: guest@localhost)"
-        &= explicit
-    , optMessages = Health 50000 100000
-        &= name "messages"
-        &= typ  "WARN,CRIT"
-        &= help "The total number of messages for a specific queue (measurement: double)"
-        &= explicit
-    , optMemory = Health 1024 2028
-        &= name "memory"
-        &= typ  "WARN,CRIT"
-        &= help "The amount of memory in use by a specific queue (measurement: megabytes)"
-        &= explicit
-    } &= name "check queue"
-      &= help "Check a specific queue's health"
+programInfo = concat
+    [ programName
+    , " version "
+    , showVersion version
+    , " (C) Brendan Hay <brendan@soundcloud.com> 2012"
+    ]
 
 --
 -- Defaults
 --
 
-defaultUri :: String
-defaultUri = "http://guest:guest@127.0.0.1:55672/"
+uri :: Uri
+uri = parseUri "http://guest:guest@127.0.0.1:55672/"
+
+health, messages, memory :: Double -> Health
+health crit = Health (fromInteger . floor $ crit / 2) crit
+messages    = health
+memory      = health
+
+oneMonth :: Int
+oneMonth = 30
+
+quarterMillion, fiftyMillion :: Double
+quarterMillion = 250000
+fiftyMillion   = 50000000
+
+twoGigabytes, tenGigabytes :: Double
+twoGigabytes = 2048
+tenGigabytes = 10240
+
+--
+-- Modes
+--
+
+measure :: SubMode
+measure = subMode
+    { name  = "measure"
+    , def   = Measure uri oneMonth (SinkOptions Stdout "" "")
+    , help  = "Measure and emit metrics to the specified sink"
+    , flags = [ uriFlag
+              , daysFlag "Number of days before a connection is considered stale"
+              ]
+    }
+
+pruneConnections :: SubMode
+pruneConnections = subMode
+    { name  = "connections"
+    , def   = PruneConnections uri oneMonth
+    , help  = "Perform idle connection pruning"
+    , flags = [ uriFlag
+              , daysFlag "Number of days before a connection is considered stale"
+              ]
+    }
+
+pruneQueues :: SubMode
+pruneQueues = subMode
+    { name  = "queues"
+    , def   = PruneQueues uri
+    , help  = "Perform inactive queue pruning"
+    , flags = [uriFlag]
+    }
+
+prune :: SubMode
+prune = subMode
+    { name  = "prune"
+    , def   = Help prune
+    , help  = "Prune mode"
+    , modes = [pruneConnections, pruneQueues]
+    }
+
+checkNode :: SubMode
+checkNode = subMode
+    { name  = "node"
+    , def   = CheckNode uri (messages fiftyMillion) (memory tenGigabytes)
+    , help  = "Check a node's memory and message backlog"
+    , flags = [ uriFlag
+              , healthFlag "messages" "WARN,CRIT" "The message health thresholds"
+              , healthFlag "memory" "WARN,CRIT" "The memory usage thresholds (measurement: megabytes)"
+              ]
+    }
+
+checkQueue :: SubMode
+checkQueue = subMode
+    { name  = "queue"
+    , def   = CheckQueue uri (messages quarterMillion) (messages twoGigabytes)
+    , help  = "Check a queue's memory and message backlog"
+    , flags = [ uriFlag
+              , healthFlag "messages" "WARN,CRIT" "The message health thresholds"
+              , healthFlag "memory" "WARN,CRIT" "The memory usage thresholds (measurement: megabytes)"
+              ]
+    }
+
+check :: SubMode
+check = subMode
+    { name  = "check"
+    , def   = Help check
+    , help  = "Check stuff"
+    , modes = [checkNode, checkQueue]
+    }
+
+program :: SubMode
+program = subMode
+    { name  = programName
+    , def   = Help program
+    , help  = "Program help"
+    , flags = [flagVersion (\_ -> Version)]
+    , modes = [measure, prune, check]
+    }
+
+--
+-- Mode Constructors
+--
+
+subMode :: SubMode
+subMode = SubMode "" (Help program) "" [] []
+
+expandMode :: SubMode -> Mode Options
+expandMode m@SubMode{..} | null modes = child
+                         | otherwise  = parent
+  where
+    errFlag = flagArg (\x _ -> Left $ "Unexpected argument " ++ x) ""
+    child   = mode name def help errFlag $ appendDefaults m flags
+    parent  = (modeEmpty def)
+        { modeNames      = [name]
+        , modeHelp       = help
+        , modeArgs       = ([], Nothing)
+        , modeGroupFlags = toGroup $ appendDefaults m flags
+        , modeGroupModes = toGroup $ map expandMode modes
+        }
+
+--
+-- Flags
+--
+
+uriFlag :: Flag Options
+uriFlag = flagReq ["uri"] (\s o -> Right $ o { optUri = parseUri s }) "URI" help
+  where
+    help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
+
+helpFlag :: a -> Flag a
+helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"
+
+appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
+appendDefaults m = (++ [helpFlag $ Help m])
+
+daysFlag :: String -> Flag Options
+daysFlag = flagReq ["days"] (\s o -> Right $ o { optDays = read s :: Int }) "INT"
+
+healthFlag :: String -> String -> String -> Flag Options
+healthFlag name = flagReq [name] upd
+  where
+    upd s o = Right o { optMemory = Health warn crit }
+      where
+        [warn, crit] = map read $ splitOn "," s :: [Double]

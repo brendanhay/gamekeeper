@@ -23,7 +23,7 @@ import GameKeeper.API
 import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Nagios
-import GameKeeper.ExplicitOptions
+import GameKeeper.Options
 
 --
 -- API
