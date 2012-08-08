@@ -29,11 +29,7 @@ import System.Console.CmdArgs.Explicit hiding (modes)
 import System.Environment                     (getArgs)
 import GameKeeper.Http
 import GameKeeper.Metric               hiding (measure)
-
-data Health = Health
-    { healthWarn :: Double
-    , healthCrit :: Double
-    } deriving (Eq, Show)
+import GameKeeper.Nagios                      (Health(..))
 
 data Options
     = Help SubMode

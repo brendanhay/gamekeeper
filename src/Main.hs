@@ -40,7 +40,6 @@ main = parseOptions >>= either putStrLn run
 
 mode :: Options -> IO ()
 mode Measure{..} = do
-    print optSink
     sink <- open optSink
     forkAll [ showOverview optUri >>= push sink
             , listConnections optUri >>= idleConnections optDays >>= push sink
@@ -64,12 +63,13 @@ mode PruneQueues{..} = do
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = do
-    (Overview cnt _) <- showOverview optUri
-    f cnt optMessages
+    -- (Overview cnt _) <- showOverview optUri
+    -- f cnt optMessages
+    exitWith $ Check (Service "NODE") Warning "Some text"
   where
-    f n Health{..} | total n >= healthWarn = warning
-                   | total n >= healthCrit = critical
-                   | otherwise             = ok
+    -- f n Health{..} | total n >= healthWarn = warning
+    --                | total n >= healthCrit = critical
+    --                | otherwise             = ok
 
 mode _ = logError msg >> error msg
   where
