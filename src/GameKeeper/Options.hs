@@ -48,11 +48,13 @@ data Options
       }
     | CheckNode
       { optUri      :: Uri
+      , optName     :: String
       , optMessages :: Health
       , optMemory   :: Health
       }
     | CheckQueue
       { optUri      :: Uri
+      , optName     :: String
       , optMessages :: Health
       , optMemory   :: Health
       }
@@ -158,22 +160,24 @@ prune = subMode
 checkNode :: SubMode
 checkNode = subMode
     { name  = "node"
-    , def   = CheckNode uri (messages fiftyMillion) (memory tenGigabytes)
+    , def   = CheckNode uri "" (messages fiftyMillion) (memory tenGigabytes)
     , help  = "Check a node's memory and message backlog"
     , flags = [ uriFlag
-              , healthFlag "messages" "WARN,CRIT" "The message health thresholds"
-              , healthFlag "memory" "WARN,CRIT" "The memory usage thresholds (measurement: megabytes)"
+              , nameFlag "ATOM" "Erlang node name"
+              , healthFlag "messages" "WARN,CRIT" "Message backlog thresholds"
+              , healthFlag "memory" "WARN,CRIT" "Memory usage thresholds (measurement: MB)"
               ]
     }
 
 checkQueue :: SubMode
 checkQueue = subMode
     { name  = "queue"
-    , def   = CheckQueue uri (messages quarterMillion) (messages twoGigabytes)
+    , def   = CheckQueue uri "" (messages quarterMillion) (messages twoGigabytes)
     , help  = "Check a queue's memory and message backlog"
     , flags = [ uriFlag
-              , healthFlag "messages" "WARN,CRIT" "The message health thresholds"
-              , healthFlag "memory" "WARN,CRIT" "The memory usage thresholds (measurement: megabytes)"
+              , nameFlag "STR" "AMQP Queue name"
+              , healthFlag "messages" "WARN,CRIT" "Message backlog thresholds"
+              , healthFlag "memory" "WARN,CRIT" "Memory usage thresholds (measurement: MB)"
               ]
     }
 
@@ -226,6 +230,9 @@ uriFlag :: Flag Options
 uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help
   where
     help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
+
+nameFlag :: String -> String -> Flag Options
+nameFlag = flagReq ["name"] (\s o -> Right o { optName = s })
 
 helpFlag :: a -> Flag a
 helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"

@@ -71,6 +71,9 @@ mode CheckNode{..} = do
     --                | total n >= healthCrit = critical
     --                | otherwise             = ok
 
+mode CheckQueue{..} = do
+    exitWith $ Check (Service "QUEUE") Warning "Some text"
+
 mode _ = logError msg >> error msg
   where
     msg = "Unsupported mode"
