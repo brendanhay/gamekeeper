@@ -66,11 +66,11 @@ mode PruneQueues{..} = do
 
 mode CheckNode{..} = run $ plugin "NODE"
     [ check { name   = "BACKLOG"
-            , value  = showOverview optUri >>= return . total . count
+            , value  = liftM (total . count) (showOverview optUri)
             , health = optMessages
             }
     , check { name   = "MEMORY"
-            , value  = showOverview optUri >>= return . total . count
+            , value  = liftM (total . count) (showOverview optUri)
             , health = optMemory
             }
     ]
