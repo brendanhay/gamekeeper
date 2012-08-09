@@ -15,34 +15,30 @@
 module GameKeeper.Nagios (
     -- * Exported Types
       Health(..)
-    , Service
     , Message
     , Status(..)
+    , Plugin(..)
     , Check(..)
 
     -- * Functions
+    , plugin
     , check
+    , run
     ) where
 
-import Data.Char (toUpper)
+import Control.Monad
+import Prelude           hiding (catch)
+import Control.Exception
+import Data.Char                (toUpper)
 
 import qualified Data.ByteString.Char8 as BS
 import qualified System.Exit           as E
 
-data Health  = Health Double Double deriving (Eq, Show)
-
-type Service = BS.ByteString
+type Result  = (Status, BS.ByteString)
 
 type Message = Double -> BS.ByteString
 
-data Check = Check
-    { service  :: Service
-    , health   :: Health
-    , ok       :: Message
-    , warning  :: Message
-    , critical :: Message
-    , unknown  :: BS.ByteString
-    }
+data Health  = Health Double Double deriving (Eq, Show)
 
 data Status
     = OK
@@ -65,24 +61,66 @@ data Status
       --   generally NOT be reported as UNKNOWN states.
       deriving (Eq, Enum, Show)
 
+data Plugin = Plugin
+    { service :: BS.ByteString
+    , checks  :: [Check]
+    }
+
+data Check = Check
+    { name     :: BS.ByteString
+    , value    :: IO (Maybe Double)
+    , health   :: Health
+    , ok       :: Message
+    , warning  :: Message
+    , critical :: Message
+    , unknown  :: BS.ByteString
+    }
+
 --
 -- API
 --
 
-check :: Maybe Double -> Check -> IO ()
-check n chk@Check{..} = do
-    BS.putStrLn output
-    E.exitWith $ code s
+plugin :: BS.ByteString -> [Check] -> Plugin
+plugin = Plugin
+
+check :: Check
+check = Check
+    { name     = "CHECK"
+    , value    = return Nothing
+    , health   = Health 0 0
+    , ok       = \_ -> ""
+    , warning  = \_ -> ""
+    , critical = \_ -> ""
+    , unknown  = ""
+    }
+
+run :: Plugin -> IO ()
+run Plugin{..} = do
+    (xs, xt) <- mapM exec checks >>= return . unzip
+    let s = pick xs
+    BS.putStrLn $ format service s ""
+    BS.putStrLn $ BS.intercalate "\n" xt
+    E.exitWith  $ code s
   where
-    (s, m) = status n chk
-    pack   = BS.pack . map toUpper . show
-    output = BS.concat [service, " ", pack s, " - ", m]
+    code OK = E.ExitSuccess
+    code s  = E.ExitFailure (fromEnum s)
+    pick xs | all (== OK) xs       = OK
+            | any (== Critical) xs = Critical
+            | any (== Unknown) xs  = Unknown
+            | any (== Warning) xs  = Warning
+            | otherwise            = Unknown
 
 --
 -- Private
 --
 
-status :: Maybe Double -> Check -> (Status, BS.ByteString)
+exec :: Check -> IO Result
+exec chk@Check{..} = do
+    n <- value
+    let (s, t) = status n chk
+    return (s, format name s t)
+
+status :: Maybe Double -> Check -> Result
 status Nothing  Check{..}             = (Unknown, unknown)
 status (Just n) Check{..} | n >= x    = (Warning, warning n)
                           | n >= y    = (Critical, critical n)
@@ -90,6 +128,5 @@ status (Just n) Check{..} | n >= x    = (Warning, warning n)
   where
     (Health x y) = health
 
-code :: Status -> E.ExitCode
-code OK = E.ExitSuccess
-code s  = E.ExitFailure (fromEnum s)
+format :: BS.ByteString -> Status -> BS.ByteString -> BS.ByteString
+format name s t = BS.concat [name, " ", BS.pack . map toUpper $ show s, " - ", t]

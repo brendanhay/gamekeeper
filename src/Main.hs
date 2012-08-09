@@ -25,6 +25,8 @@ import GameKeeper.Metric
 import GameKeeper.Nagios
 import GameKeeper.Options
 
+import qualified Data.ByteString.Char8 as BS
+
 --
 -- API
 --
@@ -62,17 +64,27 @@ mode PruneQueues{..} = do
     qs <- listQueues optUri
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
-mode CheckNode{..} = do
-    -- (Overview cnt _) <- showOverview optUri
-    -- f cnt optMessages
-    exitWith $ Check (Service "NODE") Warning "Some text"
-  where
-    -- f n Health{..} | total n >= healthWarn = warning
-    --                | total n >= healthCrit = critical
-    --                | otherwise             = ok
+mode CheckNode{..} = run $ plugin "NODE"
+    [ check { name   = "BACKLOG"
+            , value  = showOverview optUri >>= return . Just . total . count
+            , health = optMessages
+            }
+    , check { name   = "MEMORY"
+            , value  = showOverview optUri >>= return . Just . total . count
+            , health = optMemory
+            }
+    ]
 
-mode CheckQueue{..} = do
-    exitWith $ Check (Service "QUEUE") Warning "Some text"
+mode CheckQueue{..} = run $ plugin "QUEUE"
+    [ check { name   = "BACKLOG"
+            -- , value  = showOverview optUri >>= return . Just . total . count
+            , health = optMessages
+            }
+    , check { name   = "MEMORY"
+            -- , value  = showOverview optUri >>= return . Just . total . count
+            , health = optMemory
+            }
+    ]
 
 mode _ = logError msg >> error msg
   where
