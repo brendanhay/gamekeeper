@@ -42,7 +42,10 @@ data Rate = Rate
     , ack       :: Double
     } deriving (Show)
 
-data Overview = Overview Count Rate deriving (Show)
+data Overview = Overview
+    { count :: Count
+    , rate  :: Rate
+    } deriving (Show)
 
 instance FromJSON Count where
     parseJSON (Object o) = Count
