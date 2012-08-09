@@ -94,18 +94,18 @@ check = Check
 
 run :: Plugin -> IO ()
 run Plugin{..} = do
-    (xs, xt) <- mapAndUnzipM exec checks
-    let s = precedence xs
-    BS.putStrLn $ format service s ""
-    BS.putStrLn $ BS.intercalate "\n" xt
-    E.exitWith  $ code s
+    res <- mapM execute checks
+    let (s, t) = precedence res
+    BS.putStrLn $ format service s t
+    BS.putStrLn . BS.intercalate "\n" . snd $ unzip res
+    E.exitWith $ code s
 
 --
 -- Private
 --
 
-exec :: Check -> IO Result
-exec chk@Check{..} = do
+execute :: Check -> IO Result
+execute chk@Check{..} = do
     n <- try value
     let (s, t) = status chk n
     return (s, format name s t)
@@ -121,12 +121,15 @@ status Check{..} (Right n) | n >= y    = (Critical, critical n)
 format :: BS.ByteString -> Status -> BS.ByteString -> BS.ByteString
 format name s t = BS.concat [name, " ", BS.pack . map toUpper $ show s, " - ", t]
 
-precedence :: [Status] -> Status
-precedence xs | all (== OK) xs     = OK
-              | Critical `elem` xs = Critical
-              | Unknown `elem` xs  = Unknown
-              | Warning `elem` xs  = Warning
-              | otherwise          = Unknown
+precedence :: [Result] -> Result
+precedence lst | test all OK       = (OK, "All services checked OK")
+               | test any Critical = res Critical
+               | test any Unknown  = res Unknown
+               | test any Warning  = res Warning
+               | otherwise         = res Unknown
+  where
+    test p typ = p ((== typ) . fst) lst
+    res typ    = (typ, BS.intercalate ", " . map snd $ filter ((== typ) . fst) lst)
 
 code :: Status -> E.ExitCode
 code OK = E.ExitSuccess
