@@ -122,8 +122,8 @@ exec chk@Check{..} = do
 
 status :: Maybe Double -> Check -> Result
 status Nothing  Check{..}             = (Unknown, unknown)
-status (Just n) Check{..} | n >= x    = (Warning, warning n)
-                          | n >= y    = (Critical, critical n)
+status (Just n) Check{..} | n >= y    = (Critical, critical n)
+                          | n >= x    = (Warning, warning n)
                           | otherwise = (OK, ok n)
   where
     (Health x y) = health
