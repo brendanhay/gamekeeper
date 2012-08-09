@@ -68,12 +68,11 @@ data Plugin = Plugin
 
 data Check = Check
     { name     :: BS.ByteString
-    , value    :: IO (Maybe Double)
+    , value    :: IO Double
     , health   :: Health
     , ok       :: Message
     , warning  :: Message
     , critical :: Message
-    , unknown  :: BS.ByteString
     }
 
 --
@@ -86,12 +85,11 @@ plugin = Plugin
 check :: Check
 check = Check
     { name     = "CHECK"
-    , value    = return Nothing
+    , value    = throw $ NoMethodError "Check value not specified"
     , health   = Health 0 0
     , ok       = \_ -> ""
     , warning  = \_ -> ""
     , critical = \_ -> ""
-    , unknown  = ""
     }
 
 run :: Plugin -> IO ()
@@ -116,15 +114,15 @@ run Plugin{..} = do
 
 exec :: Check -> IO Result
 exec chk@Check{..} = do
-    n <- value
-    let (s, t) = status n chk
+    n <- try value
+    let (s, t) = status chk n
     return (s, format name s t)
 
-status :: Maybe Double -> Check -> Result
-status Nothing  Check{..}             = (Unknown, unknown)
-status (Just n) Check{..} | n >= y    = (Critical, critical n)
-                          | n >= x    = (Warning, warning n)
-                          | otherwise = (OK, ok n)
+status :: Check -> Either SomeException Double -> Result
+status Check{..} (Left e)              = (Unknown, BS.pack $ show e)
+status Check{..} (Right n) | n >= y    = (Critical, critical n)
+                           | n >= x    = (Warning, warning n)
+                           | otherwise = (OK, ok n)
   where
     (Health x y) = health
 
