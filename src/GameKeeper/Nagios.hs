@@ -94,19 +94,11 @@ check = Check
 
 run :: Plugin -> IO ()
 run Plugin{..} = do
-    (xs, xt) <- mapM exec checks >>= return . unzip
-    let s = pick xs
+    (xs, xt) <- mapAndUnzipM exec checks
+    let s = precedence xs
     BS.putStrLn $ format service s ""
     BS.putStrLn $ BS.intercalate "\n" xt
     E.exitWith  $ code s
-  where
-    code OK = E.ExitSuccess
-    code s  = E.ExitFailure (fromEnum s)
-    pick xs | all (== OK) xs       = OK
-            | any (== Critical) xs = Critical
-            | any (== Unknown) xs  = Unknown
-            | any (== Warning) xs  = Warning
-            | otherwise            = Unknown
 
 --
 -- Private
@@ -128,3 +120,14 @@ status Check{..} (Right n) | n >= y    = (Critical, critical n)
 
 format :: BS.ByteString -> Status -> BS.ByteString -> BS.ByteString
 format name s t = BS.concat [name, " ", BS.pack . map toUpper $ show s, " - ", t]
+
+precedence :: [Status] -> Status
+precedence xs | all (== OK) xs     = OK
+              | Critical `elem` xs = Critical
+              | Unknown `elem` xs  = Unknown
+              | Warning `elem` xs  = Warning
+              | otherwise          = Unknown
+
+code :: Status -> E.ExitCode
+code OK = E.ExitSuccess
+code s  = E.ExitFailure (fromEnum s)
