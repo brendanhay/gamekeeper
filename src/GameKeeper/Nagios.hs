@@ -124,12 +124,13 @@ status Check{..} (Right n) | n >= y    = Critical name $ critical n
 
 fold :: Service -> [Status] -> Status
 fold serv lst | length ok == length lst = OK serv "All servervices healthy"
-              | not $ null crit         = Critical serv $ text crit
-              | not $ null unkn         = Unknown serv $ text unkn
-              | not $ null warn         = Warning serv $ text warn
+              | any' crit               = Critical serv $ text crit
+              | any' unkn               = Unknown serv $ text unkn
+              | any' warn               = Warning serv $ text warn
               | otherwise               = Unknown serv $ text unkn
   where
     [ok, warn, crit, unkn] = split lst
+    any' = not . null
     text = BS.intercalate ", " . map message
 
 split :: [Status] -> [[Status]]
