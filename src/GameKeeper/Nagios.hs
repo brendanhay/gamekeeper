@@ -29,29 +29,39 @@ module GameKeeper.Nagios (
 import Control.Monad
 import Prelude           hiding (catch)
 import Control.Exception
-import Data.Char                (toUpper)
 
 import qualified Data.ByteString.Char8 as BS
 import qualified System.Exit           as E
 
-type Result  = (Status, BS.ByteString)
-
-type Message = Double -> BS.ByteString
+type Service = BS.ByteString
+type Message = BS.ByteString
 
 data Health  = Health Double Double deriving (Eq, Show)
 
 data Status
     = OK
+      { service :: Service
+      , message :: Message
+      }
       -- ^ The plugin was able to check the service and
       --   it appeared to be functioning properly
     | Warning
+      { service :: Service
+      , message :: Message
+      }
       -- ^ The plugin was able to check the service,
       --   but it appeared to be above some "warning"
       --   threshold or did not appear to be working properly
     | Critical
+      { service :: Service
+      , message :: Message
+      }
       -- ^ The plugin detected that either the service was
       --   not running or it was above some "critical" threshold
     | Unknown
+      { service :: Service
+      , message :: Message
+      }
       -- ^ Invalid command line arguments were supplied
       --   to the plugin or low-level failures internal
       --   to the plugin (such as unable to fork, or open a tcp socket)
@@ -59,27 +69,24 @@ data Status
       --   Higher-level errors (such as name resolution errors, socket timeouts, etc)
       --   are outside of the control of plugins and should
       --   generally NOT be reported as UNKNOWN states.
-      deriving (Eq, Enum, Show)
+      deriving (Eq, Show)
 
-data Plugin = Plugin
-    { service :: BS.ByteString
-    , checks  :: [Check]
-    }
+data Plugin = Plugin Service [Check]
 
 data Check = Check
-    { name     :: BS.ByteString
+    { name     :: Service
     , value    :: IO Double
     , health   :: Health
-    , ok       :: Message
-    , warning  :: Message
-    , critical :: Message
+    , ok       :: Double -> Message
+    , warning  :: Double -> Message
+    , critical :: Double -> Message
     }
 
 --
 -- API
 --
 
-plugin :: BS.ByteString -> [Check] -> Plugin
+plugin :: Service -> [Check] -> Plugin
 plugin = Plugin
 
 check :: Check
@@ -93,44 +100,59 @@ check = Check
     }
 
 run :: Plugin -> IO ()
-run Plugin{..} = do
-    res <- mapM execute checks
-    let (s, t) = precedence res
-    BS.putStrLn $ format service s t
-    BS.putStrLn . BS.intercalate "\n" . snd $ unzip res
-    E.exitWith $ code s
+run (Plugin service checks) = do
+    res <- mapM exec checks
+    let acc = fold service res
+    BS.putStrLn $ format acc
+    mapM_ (BS.putStrLn . format) res
+    E.exitWith $ code acc
 
 --
 -- Private
 --
 
-execute :: Check -> IO Result
-execute chk@Check{..} = do
-    n <- try value
-    let (s, t) = status chk n
-    return (s, format name s t)
+exec :: Check -> IO Status
+exec chk = liftM (status chk) (try $ value chk)
 
-status :: Check -> Either SomeException Double -> Result
-status Check{..} (Left e)              = (Unknown, BS.pack $ show e)
-status Check{..} (Right n) | n >= y    = (Critical, critical n)
-                           | n >= x    = (Warning, warning n)
-                           | otherwise = (OK, ok n)
+status :: Check -> Either SomeException Double -> Status
+status Check{..} (Left e)              = Unknown name (BS.pack $ show e)
+status Check{..} (Right n) | n >= y    = Critical name $ critical n
+                           | n >= x    = Warning name $ warning n
+                           | otherwise = OK name $ ok n
   where
     (Health x y) = health
 
-format :: BS.ByteString -> Status -> BS.ByteString -> BS.ByteString
-format name s t = BS.concat [name, " ", BS.pack . map toUpper $ show s, " - ", t]
-
-precedence :: [Result] -> Result
-precedence lst | test all OK       = (OK, "All services checked OK")
-               | test any Critical = res Critical
-               | test any Unknown  = res Unknown
-               | test any Warning  = res Warning
-               | otherwise         = res Unknown
+fold :: Service -> [Status] -> Status
+fold serv lst | length ok == length lst = OK serv "All servervices healthy"
+              | not $ null crit         = Critical serv $ text crit
+              | not $ null unkn         = Unknown serv $ text unkn
+              | not $ null warn         = Warning serv $ text warn
+              | otherwise               = Unknown serv $ text unkn
   where
-    test p typ = p ((== typ) . fst) lst
-    res typ    = (typ, BS.intercalate ", " . map snd $ filter ((== typ) . fst) lst)
+    [ok, warn, crit, unkn] = split lst
+    text = BS.intercalate ", " . map message
+
+split :: [Status] -> [[Status]]
+split lst = map f [0..3]
+  where
+    f n = filter ((== n) . enum) lst
+
+enum :: Status -> Int
+enum (OK       _ _) = 0
+enum (Warning  _ _) = 1
+enum (Critical _ _) = 2
+enum (Unknown  _ _) = 3
+
+symbol :: Status -> BS.ByteString
+symbol s = case enum s of
+    0 -> "OK"
+    1 -> "WARNING"
+    2 -> "CRITICAL"
+    _ -> "UNKNOWN"
+
+format :: Status -> BS.ByteString
+format s = BS.concat [symbol s, " ", service s, " - ", message s]
 
 code :: Status -> E.ExitCode
-code OK = E.ExitSuccess
-code s  = E.ExitFailure (fromEnum s)
+code (OK _ _) = E.ExitSuccess
+code s        = E.ExitFailure $ enum s

@@ -68,6 +68,7 @@ mode CheckNode{..} = run $ plugin "NODE"
     [ check { name   = "BACKLOG"
             , value  = liftM (total . count) (showOverview optUri)
             , health = optMessages
+            , ok     = \n -> BS.pack $ show n ++ " messages ready"
             }
     , check { name   = "MEMORY"
             , value  = liftM (total . count) (showOverview optUri)
