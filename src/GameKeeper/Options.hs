@@ -164,8 +164,8 @@ checkNode = subMode
     , help  = "Check a node's memory and message backlog"
     , flags = [ uriFlag
               , nameFlag "ATOM" "Erlang node name"
-              , healthFlag "messages" "WARN,CRIT" "Message backlog thresholds"
-              , healthFlag "memory" "WARN,CRIT" "Memory usage thresholds (measurement: MB)"
+              , messagesFlag "Message backlog thresholds"
+              , memoryFlag "Memory usage thresholds (measurement: GB)"
               ]
     }
 
@@ -176,8 +176,8 @@ checkQueue = subMode
     , help  = "Check a queue's memory and message backlog"
     , flags = [ uriFlag
               , nameFlag "STR" "AMQP Queue name"
-              , healthFlag "messages" "WARN,CRIT" "Message backlog thresholds"
-              , healthFlag "memory" "WARN,CRIT" "Memory usage thresholds (measurement: MB)"
+              , messagesFlag "Message backlog thresholds"
+              , memoryFlag "Memory usage thresholds (measurement: MB)"
               ]
     }
 
@@ -240,12 +240,25 @@ helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"
 daysFlag :: String -> Flag Options
 daysFlag = flagReq ["days"] (\s o -> Right $ o { optDays = read s :: Int }) "INT"
 
-healthFlag :: String -> String -> String -> Flag Options
-healthFlag name = flagReq [name] upd
+healthFlag :: String
+           -> (Options -> Double -> Double -> Options)
+           -> String
+           -> Flag Options
+healthFlag name upd help = flagReq [name] f "WARN,CRIT" help
   where
-    upd s o = Right o { optMemory = Health warn crit }
+    f s o = Right $ upd o warn crit
       where
         [warn, crit] = map read $ splitOn "," s :: [Double]
+
+messagesFlag :: String -> Flag Options
+messagesFlag = healthFlag "messages" upd
+  where
+    upd o w c = o { optMemory = Health w c }
+
+memoryFlag :: String -> Flag Options
+memoryFlag = healthFlag "memory" upd
+  where
+    upd o w c = o { optMessages = Health w c }
 
 sinkFlag :: String -> Flag Options
 sinkFlag = flagReq ["sink"] upd "SINK,HOST,PORT"

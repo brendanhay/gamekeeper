@@ -64,31 +64,32 @@ mode PruneQueues{..} = do
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = exec $ Plugin "NODE"
-    [ check { name    = "BACKLOG"
-            , value   = liftM (total . count) (showOverview optUri)
-            , health  = optMessages
-            , ok      = printf "%f messages ready"
-            , warning = printf "%f/%f"
+    [ check { name     = "BACKLOG"
+            , value    = liftM (total . count) (showOverview optUri)
+            , health   = optMessages
+            , ok       = printf "%f messages ready"
+            , critical = printf "%f/%f messages ready"
+            , warning  = printf "%f/%f messages ready"
             }
     , check { name     = "MEMORY"
             , value    = liftM (total . count) (showOverview optUri)
             , health   = optMemory
-            , ok       = printf "%f mem used"
-            , warning  = printf "%f/%f mem used"
-            , critical = printf "%f/%f mem used"
+            , ok       = printf "%fMB mem used"
+            , critical = printf "%f/%fMB mem used"
+            , warning  = printf "%f/%fMB mem used"
             }
     ]
 
--- mode CheckQueue{..} = run $ plugin "QUEUE"
---     [ check { name   = "BACKLOG"
---             -- , value  = showOverview optUri >>= return . Just . total . count
---             , health = optMessages
---             }
---     , check { name   = "MEMORY"
---             -- , value  = showOverview optUri >>= return . Just . total . count
---             , health = optMemory
---             }
---     ]
+mode CheckQueue{..} = exec $ Plugin "QUEUE"
+    [ check { name   = "BACKLOG"
+            -- , value  = showOverview optUri >>= return . Just . total . count
+            , health = optMessages
+            }
+    , check { name   = "MEMORY"
+            -- , value  = showOverview optUri >>= return . Just . total . count
+            , health = optMemory
+            }
+    ]
 
 mode _ = logError err >> error err
   where
