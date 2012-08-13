@@ -117,13 +117,9 @@ memory      = health
 oneMonth :: Int
 oneMonth = 30
 
-quarterMillion, fiftyMillion :: Double
+quarterMillion, thirtyMillion :: Double
 quarterMillion = 250000
-fiftyMillion   = 50000000
-
-twoGigabytes, tenGigabytes :: Double
-twoGigabytes = 2048
-tenGigabytes = 10240
+thirtyMillion  = 30000000
 
 subMode :: SubMode
 subMode = SubMode "" (Help program) "" [] []
@@ -186,7 +182,7 @@ prune = subMode
 checkNode :: SubMode
 checkNode = subMode
     { name  = "node"
-    , def   = CheckNode uri "" (messages fiftyMillion) (memory tenGigabytes)
+    , def   = CheckNode uri "" (messages thirtyMillion) (memory 8)
     , help  = "Check a node's memory and message backlog"
     , flags = [ uriFlag
               , nameFlag "ATOM" "Erlang node name"
@@ -198,7 +194,7 @@ checkNode = subMode
 checkQueue :: SubMode
 checkQueue = subMode
     { name  = "queue"
-    , def   = CheckQueue uri "" (messages quarterMillion) (messages twoGigabytes)
+    , def   = CheckQueue uri "" (messages quarterMillion) (memory 500)
     , help  = "Check a queue's memory and message backlog"
     , flags = [ uriFlag
               , nameFlag "STR" "AMQP Queue name"
