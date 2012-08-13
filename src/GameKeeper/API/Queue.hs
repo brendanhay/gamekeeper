@@ -12,9 +12,10 @@
 
 module GameKeeper.API.Queue (
     -- * Exported Types
-      Queue
+      Queue(messages, memory)
 
     -- * HTTP Requests
+    , showQueue
     , listQueues
     , deleteQueue
 
@@ -27,6 +28,7 @@ import Control.Applicative ((<$>), (<*>), empty)
 import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
+import Data.Maybe          (fromJust)
 import Data.Vector         (Vector)
 import GameKeeper.Http
 import GameKeeper.Metric
@@ -67,6 +69,14 @@ instance Measurable Queue where
 -- API
 --
 
+showQueue :: Uri -> String -> IO Queue
+showQueue uri name = do
+    body <- get uri { uriPath = path, uriQuery = query }
+    return $ fromJust (decode' body :: Maybe Queue)
+  where
+    path  = BS.concat ["api/queues/", enc "/", "/", BS.pack name]
+    query = "?columns=name,vhost,messages,consumers,memory"
+
 listQueues :: Uri -> IO [Queue]
 listQueues uri = list uri "api/queues" query decode
   where
@@ -75,11 +85,8 @@ listQueues uri = list uri "api/queues" query decode
 
 deleteQueue :: Uri -> Queue -> IO ()
 deleteQueue uri Queue{..} = do
-    _ <- delete uri { uriPath = BS.concat ["api/queues/", enc, "/", name] }
+    _ <- delete uri { uriPath = BS.concat ["api/queues/", enc vhost, "/", name] }
     return ()
-  where
-    enc | vhost == "/" = "%2f"
-        | otherwise    = vhost
 
 idleQueues :: [Queue] -> [(Bool, Queue)]
 idleQueues = filterQueues (\Queue{..} -> consumers == 0)
@@ -96,3 +103,7 @@ filterQueues f lst = zip (map f lst) lst
 
 megabytes :: Double -> Double
 megabytes = (!! 2) . iterate (/ 1024)
+
+enc :: BS.ByteString -> BS.ByteString
+enc "/" = "%2f"
+enc s   = s

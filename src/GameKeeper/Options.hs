@@ -95,6 +95,7 @@ programInfo = concat
 
 validate :: Options -> Either String Options
 validate opts@CheckNode{..}  = when opts [(null optName, "--name cannot be blank")]
+validate opts@CheckQueue{..} = when opts [(null optName, "--name cannot be blank")]
 validate opts                = Right opts
 
 when :: Options -> [(Bool, String)] -> Either String Options

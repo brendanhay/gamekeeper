@@ -86,16 +86,24 @@ mode CheckNode{..} = exec $ Plugin "NODE"
 
 mode CheckQueue{..} = exec $ Plugin "QUEUE"
     [ check
-      { name  = "BACKLOG"
-            -- , value  = showOverview optUri >>= return . Just . total . count
-      , health = optMessages
+      { name     = "BACKLOG"
+      , value    = liftM messages queue
+      , health   = optMessages
+      , ok       = printf "%.0f messages ready"
+      , critical = printf "%.0f/.0%f messages ready"
+      , warning  = printf "%.0f/.0%f messages ready"
       }
     , check
-      { name  = "MEMORY"
-      -- , value  = showOverview optUri >>= return . Just . total . count
-      , health = optMemory
+      { name     = "MEMORY"
+      , value    = liftM memory queue
+      , health   = optMemory
+      , ok       = printf "%.2fMB mem used"
+      , critical = printf "%.2f/%.2fMB mem used"
+      , warning  = printf "%.2/%.2fMB mem used"
       }
     ]
+  where
+    queue = showQueue optUri optName
 
 mode _ = logError err >> error err
   where
