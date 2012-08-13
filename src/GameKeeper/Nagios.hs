@@ -22,7 +22,7 @@ module GameKeeper.Nagios (
 
     -- * Functions
     , check
-    , tryValue
+    , liftV
     ) where
 
 import Prelude           hiding (catch)
@@ -96,11 +96,11 @@ check (Plugin title service checks) = do
     res   = map f checks
     acc   = fold (BS.concat [title, " ", service]) res
 
-tryValue :: Either SomeException a
-         -> (a -> Double)
-         -> Either SomeException Double
-tryValue (Left l)  _ = Left l
-tryValue (Right r) f = Right (f r)
+liftV :: (a -> Double)
+      -> Either SomeException a
+      -> Either SomeException Double
+liftV _ (Left l)  = Left l
+liftV f (Right r) = Right (f r)
 
 --
 -- Private

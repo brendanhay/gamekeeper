@@ -74,7 +74,7 @@ mode CheckNode{..} = do
     check $ Plugin "NODE" optName
         [ Check
           { name     = "BACKLOG"
-          , value    = tryValue over (total . count)
+          , value    = liftV (total . count) over
           , health   = optMessages
           , ok       = printf "%.0f messages ready"
           , critical = printf "%.0f/.0%f messages ready"
@@ -82,7 +82,7 @@ mode CheckNode{..} = do
           }
         , Check
           { name     = "MEMORY"
-          , value    = tryValue node used
+          , value    = liftV used node
           , health   = optMemory
           , ok       = printf "%.2fGB mem used"
           , critical = printf "%.2f/%.2fGB mem used"
@@ -95,7 +95,7 @@ mode CheckQueue{..} = do
     check $ Plugin "QUEUE" optName
         [ Check
           { name     = "BACKLOG"
-          , value    = tryValue queue messages
+          , value    = liftV messages queue
           , health   = optMessages
           , ok       = printf "%.0f messages ready"
           , critical = printf "%.0f/.0%f messages ready"
@@ -103,7 +103,7 @@ mode CheckQueue{..} = do
           }
         , Check
           { name     = "MEMORY"
-          , value    = tryValue queue memory
+          , value    = liftV memory queue
           , health   = optMemory
           , ok       = printf "%.2fMB mem used"
           , critical = printf "%.2f/%.2fMB mem used"
