@@ -25,8 +25,6 @@ import GameKeeper.Metric
 import GameKeeper.Nagios
 import GameKeeper.Options
 
-import qualified Data.ByteString.Char8 as BS
-
 --
 -- API
 --
@@ -65,14 +63,17 @@ mode PruneQueues{..} = do
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = run $ plugin "NODE"
-    [ check { name   = "BACKLOG"
-            , value  = liftM (total . count) (showOverview optUri)
-            , health = optMessages
-            , ok     = \n -> BS.pack $ show n ++ " messages ready"
+    [ check { name    = "BACKLOG"
+            , value   = liftM (total . count) (showOverview optUri)
+            , health  = optMessages
+            , ok      = msg "%f messages ready"
+            , warning = msg "%f"
             }
     , check { name   = "MEMORY"
             , value  = liftM (total . count) (showOverview optUri)
             , health = optMemory
+            , ok      = msg "%f mem used"
+            , warning = msg "%f"
             }
     ]
 
@@ -87,9 +88,9 @@ mode CheckQueue{..} = run $ plugin "QUEUE"
             }
     ]
 
-mode _ = logError msg >> error msg
+mode _ = logError err >> error err
   where
-    msg = "Unsupported mode"
+    err = "Unsupported mode"
 
 --
 -- Forking

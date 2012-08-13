@@ -21,14 +21,16 @@ module GameKeeper.Nagios (
     , Check(..)
 
     -- * Functions
+    , msg
     , plugin
     , check
     , run
     ) where
 
-import Control.Monad
 import Prelude           hiding (catch)
 import Control.Exception
+import Control.Monad
+import Text.Printf
 
 import qualified Data.ByteString.Char8 as BS
 import qualified System.Exit           as E
@@ -86,6 +88,9 @@ data Check = Check
 -- API
 --
 
+msg :: String -> Double -> Message
+msg s = BS.pack . printf s
+
 plugin :: Service -> [Check] -> Plugin
 plugin = Plugin
 
@@ -110,6 +115,8 @@ run (Plugin service checks) = do
 --
 -- Private
 --
+
+
 
 exec :: Check -> IO Status
 exec chk = liftM (status chk) (try $ value chk)
