@@ -91,20 +91,20 @@ check (Plugin title service checks) = do
     mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
-    f chk = status chk $ value chk
-    res   = map f checks
-    acc   = fold (BS.concat [title, " ", service]) res
+    res = map status checks
+    acc = fold (BS.concat [title, " ", service]) res
 
 --
 -- Private
 --
 
-status :: Check -> Either SomeException Double -> Status
-status Check{..} (Left e)              = Unknown name $ show e
-status Check{..} (Right n) | n >= y    = Critical name $ critical n x
-                           | n >= x    = Warning name $ warning n y
-                           | otherwise = OK name $ ok n
+status :: Check -> Status
+status Check{ name = name, value = Left e } = Unknown name $ show e
+status Check{..} | n >= y                   = Critical name $ critical n x
+                 | n >= x                   = Warning name $ warning n y
+                 | otherwise                = OK name $ ok n
   where
+    (Right n)    = value
     (Health x y) = health
 
 fold :: Service -> [Status] -> Status
