@@ -123,7 +123,7 @@ status Check{..} (Right n) | n >= y    = Critical name $ critical n
     (Health x y) = health
 
 fold :: Service -> [Status] -> Status
-fold serv lst | length ok == length lst = OK serv "All servervices healthy"
+fold serv lst | length ok == length lst = OK serv "All services healthy"
               | any' crit               = Critical serv $ text crit
               | any' unkn               = Unknown serv $ text unkn
               | any' warn               = Warning serv $ text warn
