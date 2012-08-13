@@ -69,12 +69,12 @@ instance Measurable Queue where
 -- API
 --
 
-showQueue :: Uri -> String -> IO Queue
+showQueue :: Uri -> BS.ByteString -> IO Queue
 showQueue uri name = do
     body <- get uri { uriPath = path, uriQuery = query }
     return $ fromJust (decode' body :: Maybe Queue)
   where
-    path  = BS.concat ["api/queues/", enc "/", "/", BS.pack name]
+    path  = BS.concat ["api/queues/", enc "/", "/", name]
     query = "?columns=name,vhost,messages,consumers,memory"
 
 listQueues :: Uri -> IO [Queue]

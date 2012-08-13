@@ -22,8 +22,7 @@ module GameKeeper.Nagios (
 
     -- * Functions
     , check
-    , exec
-    , transpose
+    , tryValue
     ) where
 
 import Prelude           hiding (catch)
@@ -33,6 +32,7 @@ import Data.List                (intercalate)
 import qualified Data.ByteString.Char8 as BS
 import qualified System.Exit           as E
 
+type Title   = BS.ByteString
 type Service = BS.ByteString
 type Message = String
 
@@ -71,7 +71,7 @@ data Status
       --   generally NOT be reported as UNKNOWN states.
       deriving (Eq, Show)
 
-data Plugin = Plugin Service [Check]
+data Plugin = Plugin Title Service [Check]
 
 data Check = Check
     { name     :: Service
@@ -86,31 +86,21 @@ data Check = Check
 -- API
 --
 
-check :: Check
-check = Check
-    { name     = "CHECK"
-    , value    = Right 0
-    , health   = Health 0 0
-    , ok       = \_   -> ""
-    , warning  = \_ _ -> ""
-    , critical = \_ _ -> ""
-    }
-
-exec :: Plugin -> IO ()
-exec (Plugin service checks) = do
+check :: Plugin -> IO ()
+check (Plugin title service checks) = do
     BS.putStrLn $ format acc
     mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
     f chk = status chk $ value chk
     res   = map f checks
-    acc   = fold service res
+    acc   = fold (BS.concat [title, " ", service]) res
 
-transpose :: Either SomeException a
-          -> (a -> Double)
-          -> Either SomeException Double
-transpose (Left l) _  = Left l
-transpose (Right r) f = Right (f r)
+tryValue :: Either SomeException a
+         -> (a -> Double)
+         -> Either SomeException Double
+tryValue (Left l)  _ = Left l
+tryValue (Right r) f = Right (f r)
 
 --
 -- Private

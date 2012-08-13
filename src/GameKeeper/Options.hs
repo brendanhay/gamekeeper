@@ -31,6 +31,8 @@ import GameKeeper.Http
 import GameKeeper.Metric               hiding (measure)
 import GameKeeper.Nagios                      (Health(..))
 
+import qualified Data.ByteString.Char8 as BS
+
 data Options
     = Help SubMode
     | Version
@@ -48,13 +50,13 @@ data Options
       }
     | CheckNode
       { optUri      :: Uri
-      , optName     :: String
+      , optName     :: BS.ByteString
       , optMessages :: Health
       , optMemory   :: Health
       }
     | CheckQueue
       { optUri      :: Uri
-      , optName     :: String
+      , optName     :: BS.ByteString
       , optMessages :: Health
       , optMemory   :: Health
       }
@@ -94,8 +96,8 @@ programInfo = concat
     ]
 
 validate :: Options -> Either String Options
-validate opts@CheckNode{..}  = when opts [(null optName, "--name cannot be blank")]
-validate opts@CheckQueue{..} = when opts [(null optName, "--name cannot be blank")]
+validate opts@CheckNode{..}  = when opts [(BS.null optName, "--name cannot be blank")]
+validate opts@CheckQueue{..} = when opts [(BS.null optName, "--name cannot be blank")]
 validate opts                = Right opts
 
 when :: Options -> [(Bool, String)] -> Either String Options
@@ -235,7 +237,7 @@ uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help
     help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
 
 nameFlag :: String -> String -> Flag Options
-nameFlag = flagReq ["name"] (\s o -> Right o { optName = s })
+nameFlag = flagReq ["name"] (\s o -> Right o { optName = BS.pack s })
 
 helpFlag :: a -> Flag a
 helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"

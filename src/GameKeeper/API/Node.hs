@@ -45,12 +45,12 @@ instance FromJSON Node where
 -- API
 --
 
-showNode :: Uri -> String -> IO Node
+showNode :: Uri -> BS.ByteString -> IO Node
 showNode uri name = do
     body <- get uri { uriPath = path, uriQuery = query }
     return $ fromJust (decode' body :: Maybe Node)
   where
-    path  = BS.concat ["api/nodes/", BS.pack name]
+    path  = BS.concat ["api/nodes/", name]
     query = "?columns=name,mem_used,mem_limit"
 
 --

@@ -66,20 +66,20 @@ mode PruneQueues{..} = do
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = do
-    overview <- try $ showOverview optUri
-    node     <- try $ showNode optUri optName
-    exec $ Plugin "NODE"
-        [ check
+    over <- try $ showOverview optUri
+    node <- try $ showNode optUri optName
+    check $ Plugin "NODE" optName
+        [ Check
           { name     = "BACKLOG"
-          , value    = transpose overview (total . count)
+          , value    = tryValue over (total . count)
           , health   = optMessages
           , ok       = printf "%.0f messages ready"
           , critical = printf "%.0f/.0%f messages ready"
           , warning  = printf "%.0f/.0%f messages ready"
           }
-        , check
+        , Check
           { name     = "MEMORY"
-          , value    = transpose node used
+          , value    = tryValue node used
           , health   = optMemory
           , ok       = printf "%.2fGB mem used"
           , critical = printf "%.2f/%.2fGB mem used"
@@ -89,18 +89,18 @@ mode CheckNode{..} = do
 
 mode CheckQueue{..} = do
     queue <- try $ showQueue optUri optName
-    exec $ Plugin "QUEUE"
-        [ check
+    check $ Plugin "QUEUE" optName
+        [ Check
           { name     = "BACKLOG"
-          , value    = transpose queue messages
+          , value    = tryValue queue messages
           , health   = optMessages
           , ok       = printf "%.0f messages ready"
           , critical = printf "%.0f/.0%f messages ready"
           , warning  = printf "%.0f/.0%f messages ready"
           }
-        , check
+        , Check
           { name     = "MEMORY"
-          , value    = transpose queue memory
+          , value    = tryValue queue memory
           , health   = optMemory
           , ok       = printf "%.2fMB mem used"
           , critical = printf "%.2f/%.2fMB mem used"
