@@ -70,17 +70,17 @@ mode CheckNode{..} = exec $ Plugin "NODE"
       { name     = "BACKLOG"
       , value    = liftM (total . count) (showOverview optUri)
       , health   = optMessages
-      , ok       = printf "%f messages ready"
-      , critical = printf "%f/%f messages ready"
-      , warning  = printf "%f/%f messages ready"
+      , ok       = printf "%.0f messages ready"
+      , critical = printf "%.0f/.0%f messages ready"
+      , warning  = printf "%.0f/.0%f messages ready"
       }
     , check
       { name     = "MEMORY"
       , value    = liftM used (showNode optUri optName)
       , health   = optMemory
-      , ok       = printf "%fMB mem used"
-      , critical = printf "%f/%fMB mem used"
-      , warning  = printf "%f/%fMB mem used"
+      , ok       = printf "%.2fGB mem used"
+      , critical = printf "%.2f/%.2fGB mem used"
+      , warning  = printf "%.2/%.2fGB mem used"
       }
     ]
 

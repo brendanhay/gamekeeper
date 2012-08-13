@@ -20,11 +20,11 @@ module GameKeeper.API.Node (
 
 import Prelude             hiding (show)
 import Control.Applicative ((<$>), (<*>), empty)
+import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
-import Data.Maybe          (fromMaybe, fromJust)
+import Data.Maybe          (fromJust)
 import GameKeeper.Http
-import GameKeeper.Metric
 
 import qualified Data.ByteString.Char8 as BS
 
@@ -37,8 +37,8 @@ data Node = Node
 instance FromJSON Node where
     parseJSON (Object o) = Node
         <$> o .: "name"
-        <*> o .: "mem_used"
-        <*> o .: "mem_limit"
+        <*> liftM gigabytes (o .: "mem_used")
+        <*> liftM gigabytes (o .: "mem_limit")
     parseJSON _          = empty
 
 --
@@ -52,3 +52,10 @@ showNode uri name = do
   where
     path  = BS.concat ["api/nodes/", BS.pack name]
     query = "?columns=name,mem_used,mem_limit"
+
+--
+-- Private
+--
+
+gigabytes :: Double -> Double
+gigabytes = (!! 3) . iterate (/ 1024)

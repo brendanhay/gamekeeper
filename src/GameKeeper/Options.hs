@@ -95,12 +95,13 @@ programInfo = concat
 
 validate :: Options -> Either String Options
 validate opts@CheckNode{..}  = when opts [(null optName, "--name cannot be blank")]
--- validate opts@CheckQueue{..} = when opts [(null optUri, "--uri cannot be blank")]
 validate opts                = Right opts
 
 when :: Options -> [(Bool, String)] -> Either String Options
-when opts []      = Right opts
-when _ ((_, s):_) = Left s
+when opts = f . filter ((== True) . fst)
+  where
+    f []         = Right opts
+    f ((_, s):_) = Left s
 
 uri :: Uri
 uri = parseUri "http://guest:guest@127.0.0.1:55672/"
