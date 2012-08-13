@@ -24,6 +24,7 @@ import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Nagios
 import GameKeeper.Options
+import Text.Printf            (printf)
 
 --
 -- API
@@ -62,31 +63,32 @@ mode PruneQueues{..} = do
     qs <- listQueues optUri
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
-mode CheckNode{..} = run $ plugin "NODE"
+mode CheckNode{..} = exec $ Plugin "NODE"
     [ check { name    = "BACKLOG"
             , value   = liftM (total . count) (showOverview optUri)
             , health  = optMessages
-            , ok      = msg "%f messages ready"
-            , warning = msg "%f"
+            , ok      = printf "%f messages ready"
+            , warning = printf "%f/%f"
             }
-    , check { name   = "MEMORY"
-            , value  = liftM (total . count) (showOverview optUri)
-            , health = optMemory
-            , ok      = msg "%f mem used"
-            , warning = msg "%f"
+    , check { name     = "MEMORY"
+            , value    = liftM (total . count) (showOverview optUri)
+            , health   = optMemory
+            , ok       = printf "%f mem used"
+            , warning  = printf "%f/%f mem used"
+            , critical = printf "%f/%f mem used"
             }
     ]
 
-mode CheckQueue{..} = run $ plugin "QUEUE"
-    [ check { name   = "BACKLOG"
-            -- , value  = showOverview optUri >>= return . Just . total . count
-            , health = optMessages
-            }
-    , check { name   = "MEMORY"
-            -- , value  = showOverview optUri >>= return . Just . total . count
-            , health = optMemory
-            }
-    ]
+-- mode CheckQueue{..} = run $ plugin "QUEUE"
+--     [ check { name   = "BACKLOG"
+--             -- , value  = showOverview optUri >>= return . Just . total . count
+--             , health = optMessages
+--             }
+--     , check { name   = "MEMORY"
+--             -- , value  = showOverview optUri >>= return . Just . total . count
+--             , health = optMemory
+--             }
+--     ]
 
 mode _ = logError err >> error err
   where

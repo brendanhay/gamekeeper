@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
 
 -- |
 -- Module      : GameKeeper.Nagios
@@ -21,22 +21,20 @@ module GameKeeper.Nagios (
     , Check(..)
 
     -- * Functions
-    , msg
-    , plugin
     , check
-    , run
+    , exec
     ) where
 
 import Prelude           hiding (catch)
 import Control.Exception
 import Control.Monad
-import Text.Printf
+import Data.List                (intercalate)
 
 import qualified Data.ByteString.Char8 as BS
 import qualified System.Exit           as E
 
 type Service = BS.ByteString
-type Message = BS.ByteString
+type Message = String
 
 data Health  = Health Double Double deriving (Eq, Show)
 
@@ -80,51 +78,42 @@ data Check = Check
     , value    :: IO Double
     , health   :: Health
     , ok       :: Double -> Message
-    , warning  :: Double -> Message
-    , critical :: Double -> Message
+    , warning  :: Double -> Double -> Message
+    , critical :: Double -> Double -> Message
     }
 
 --
 -- API
 --
 
-msg :: String -> Double -> Message
-msg s = BS.pack . printf s
-
-plugin :: Service -> [Check] -> Plugin
-plugin = Plugin
-
 check :: Check
 check = Check
     { name     = "CHECK"
-    , value    = throw $ NoMethodError "Check value not specified"
+    , value    = return 0
     , health   = Health 0 0
-    , ok       = \_ -> ""
-    , warning  = \_ -> ""
-    , critical = \_ -> ""
+    , ok       = \_   -> ""
+    , warning  = \_ _ -> ""
+    , critical = \_ _ -> ""
     }
 
-run :: Plugin -> IO ()
-run (Plugin service checks) = do
-    res <- mapM exec checks
+exec :: Plugin -> IO ()
+exec (Plugin service checks) = do
+    res <- mapM f checks
     let acc = fold service res
     BS.putStrLn $ format acc
     mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
+  where
+    f chk = liftM (status chk) (try $ value chk)
 
 --
 -- Private
 --
 
-
-
-exec :: Check -> IO Status
-exec chk = liftM (status chk) (try $ value chk)
-
 status :: Check -> Either SomeException Double -> Status
-status Check{..} (Left e)              = Unknown name (BS.pack $ show e)
-status Check{..} (Right n) | n >= y    = Critical name $ critical n
-                           | n >= x    = Warning name $ warning n
+status Check{..} (Left e)              = Unknown name $ show e
+status Check{..} (Right n) | n >= y    = Critical name $ critical n x
+                           | n >= x    = Warning name $ warning n y
                            | otherwise = OK name $ ok n
   where
     (Health x y) = health
@@ -138,7 +127,7 @@ fold serv lst | length ok == length lst = OK serv "All services healthy"
   where
     [ok, warn, crit, unkn] = split lst
     any' = not . null
-    text = BS.intercalate ", " . map message
+    text = intercalate ", " . map message
 
 split :: [Status] -> [[Status]]
 split lst = map f [0..3]
@@ -159,7 +148,7 @@ symbol s = case enum s of
     _ -> "UNKNOWN"
 
 format :: Status -> BS.ByteString
-format s = BS.concat [symbol s, " ", service s, " - ", message s]
+format s = BS.concat [symbol s, " ", service s, " - ", BS.pack $ message s]
 
 code :: Status -> E.ExitCode
 code (OK _ _) = E.ExitSuccess
