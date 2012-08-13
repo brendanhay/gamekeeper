@@ -24,6 +24,7 @@ import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Nagios
 import GameKeeper.Options
+import System.Exit            (ExitCode(..), exitWith)
 import Text.Printf            (printf)
 
 --
@@ -31,9 +32,10 @@ import Text.Printf            (printf)
 --
 
 main :: IO ()
-main = parseOptions >>= either putStrLn run
+main = parseOptions >>= run
   where
-    run o = do logDebug $ "Mode: " ++ show o; mode o
+    run (Left s)  = putStrLn s >> exitWith (ExitFailure 1)
+    run (Right o) = logDebug ("Mode: " ++ show o) >> mode o
 
 --
 -- Modes
@@ -64,31 +66,35 @@ mode PruneQueues{..} = do
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = exec $ Plugin "NODE"
-    [ check { name     = "BACKLOG"
-            , value    = liftM (total . count) (showOverview optUri)
-            , health   = optMessages
-            , ok       = printf "%f messages ready"
-            , critical = printf "%f/%f messages ready"
-            , warning  = printf "%f/%f messages ready"
-            }
-    , check { name     = "MEMORY"
-            , value    = liftM (total . count) (showOverview optUri)
-            , health   = optMemory
-            , ok       = printf "%fMB mem used"
-            , critical = printf "%f/%fMB mem used"
-            , warning  = printf "%f/%fMB mem used"
-            }
+    [ check
+      { name     = "BACKLOG"
+      , value    = liftM (total . count) (showOverview optUri)
+      , health   = optMessages
+      , ok       = printf "%f messages ready"
+      , critical = printf "%f/%f messages ready"
+      , warning  = printf "%f/%f messages ready"
+      }
+    , check
+      { name     = "MEMORY"
+      , value    = liftM used (showNode optUri optName)
+      , health   = optMemory
+      , ok       = printf "%fMB mem used"
+      , critical = printf "%f/%fMB mem used"
+      , warning  = printf "%f/%fMB mem used"
+      }
     ]
 
 mode CheckQueue{..} = exec $ Plugin "QUEUE"
-    [ check { name   = "BACKLOG"
+    [ check
+      { name  = "BACKLOG"
             -- , value  = showOverview optUri >>= return . Just . total . count
-            , health = optMessages
-            }
-    , check { name   = "MEMORY"
-            -- , value  = showOverview optUri >>= return . Just . total . count
-            , health = optMemory
-            }
+      , health = optMessages
+      }
+    , check
+      { name  = "MEMORY"
+      -- , value  = showOverview optUri >>= return . Just . total . count
+      , health = optMemory
+      }
     ]
 
 mode _ = logError err >> error err
