@@ -18,6 +18,7 @@ module Main (
 import Control.Concurrent
 import Control.Exception (try, finally)
 import Control.Monad     (liftM)
+import System.IO         (BufferMode(..), stderr)
 import System.IO.Unsafe  (unsafePerformIO)
 import GameKeeper.API
 import GameKeeper.Logger
@@ -32,7 +33,9 @@ import Text.Printf       (printf)
 --
 
 main :: IO ()
-main = parseOptions >>= run
+main = do
+    hSetBuffering stderr LineBuffering
+    parseOptions >>= run
   where
     run (Left s)  = putStrLn s >> exitWith (ExitFailure 1)
     run (Right o) = logDebug ("Mode: " ++ show o) >> mode o
