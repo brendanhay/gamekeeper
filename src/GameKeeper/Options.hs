@@ -249,7 +249,7 @@ healthFlag :: String
            -> (Options -> Double -> Double -> Options)
            -> String
            -> Flag Options
-healthFlag name upd help = flagReq [name] f "WARN,CRIT" help
+healthFlag name upd = flagReq [name] f "WARN,CRIT"
   where
     f s o = Right $ upd o warn crit
       where

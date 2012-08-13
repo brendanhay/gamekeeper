@@ -18,7 +18,7 @@ module Main (
 import Control.Concurrent
 import Control.Exception (try, finally)
 import Control.Monad     (liftM)
-import System.IO         (BufferMode(..), stderr)
+import System.IO         (BufferMode(..), stderr, hSetBuffering)
 import System.IO.Unsafe  (unsafePerformIO)
 import GameKeeper.API
 import GameKeeper.Logger
