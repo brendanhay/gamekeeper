@@ -78,10 +78,10 @@ parseOptions = do
     return $ case processValue (expandMode program) args of
         (Help m) -> Left . show $ helpText [] HelpFormatOne (expandMode m)
         Version  -> Left programInfo
-        opts     -> Right opts
+        opts     -> validate opts
 
 --
--- Info
+-- Private
 --
 
 programName, programInfo :: String
@@ -93,9 +93,14 @@ programInfo = concat
     , " (C) Brendan Hay <brendan@soundcloud.com> 2012"
     ]
 
---
--- Defaults
---
+validate :: Options -> Either String Options
+validate opts@CheckNode{..}  = when opts [(null optName, "--name cannot be blank")]
+-- validate opts@CheckQueue{..} = when opts [(null optUri, "--uri cannot be blank")]
+validate opts                = Right opts
+
+when :: Options -> [(Bool, String)] -> Either String Options
+when opts []      = Right opts
+when _ ((_, s):_) = Left s
 
 uri :: Uri
 uri = parseUri "http://guest:guest@127.0.0.1:55672/"
@@ -115,6 +120,23 @@ fiftyMillion   = 50000000
 twoGigabytes, tenGigabytes :: Double
 twoGigabytes = 2048
 tenGigabytes = 10240
+
+subMode :: SubMode
+subMode = SubMode "" (Help program) "" [] []
+
+expandMode :: SubMode -> Mode Options
+expandMode m@SubMode{..} | null modes = child
+                         | otherwise  = parent
+  where
+    errFlag = flagArg (\x _ -> Left $ "Unexpected argument " ++ x) ""
+    child   = mode name def help errFlag $ appendDefaults m flags
+    parent  = (modeEmpty def)
+        { modeNames      = [name]
+        , modeHelp       = help
+        , modeArgs       = ([], Nothing)
+        , modeGroupFlags = toGroup $ appendDefaults m flags
+        , modeGroupModes = toGroup $ map expandMode modes
+        }
 
 --
 -- Modes
@@ -197,27 +219,6 @@ program = subMode
     , flags = [flagVersion (\_ -> Version)]
     , modes = [measure, prune, check]
     }
-
---
--- Mode Constructors
---
-
-subMode :: SubMode
-subMode = SubMode "" (Help program) "" [] []
-
-expandMode :: SubMode -> Mode Options
-expandMode m@SubMode{..} | null modes = child
-                         | otherwise  = parent
-  where
-    errFlag = flagArg (\x _ -> Left $ "Unexpected argument " ++ x) ""
-    child   = mode name def help errFlag $ appendDefaults m flags
-    parent  = (modeEmpty def)
-        { modeNames      = [name]
-        , modeHelp       = help
-        , modeArgs       = ([], Nothing)
-        , modeGroupFlags = toGroup $ appendDefaults m flags
-        , modeGroupModes = toGroup $ map expandMode modes
-        }
 
 --
 -- Flags
