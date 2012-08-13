@@ -20,7 +20,7 @@ module GameKeeper.Logger (
 import Prelude       hiding (log)
 import Data.Time
 import System.Locale
-import System.IO            (stderr, hPutStrLn)
+import System.IO
 
 data Severity = Debug | Info | Error deriving (Show)
 
@@ -38,7 +38,9 @@ logError = log Error
 --
 
 log :: Severity -> String -> IO ()
-log m s = getCurrentTime >>= hPutStrLn stderr . unwords . format
+log m s = do
+    hSetBuffering stderr LineBuffering
+    getCurrentTime >>= hPutStrLn stderr . unwords . format
   where
     locale   = defaultTimeLocale
     format t = [short m, formatTime locale "[%FT%T.%q]" t, long m, "-- :", s]
