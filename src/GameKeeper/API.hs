@@ -12,9 +12,10 @@
 
 module GameKeeper.API (module E) where
 
-import GameKeeper.API.Overview   as E
+import GameKeeper.API.Binding    as E
 import GameKeeper.API.Connection as E
 import GameKeeper.API.Channel    as E
 import GameKeeper.API.Exchange   as E
-import GameKeeper.API.Binding    as E
+import GameKeeper.API.Node       as E
+import GameKeeper.API.Overview   as E
 import GameKeeper.API.Queue      as E
