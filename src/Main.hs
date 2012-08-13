@@ -16,16 +16,16 @@ module Main (
     ) where
 
 import Control.Concurrent
-import Control.Exception.Base (finally)
-import Control.Monad          (liftM)
-import System.IO.Unsafe       (unsafePerformIO)
+import Control.Exception (try, finally)
+import Control.Monad     (liftM)
+import System.IO.Unsafe  (unsafePerformIO)
 import GameKeeper.API
 import GameKeeper.Logger
 import GameKeeper.Metric
 import GameKeeper.Nagios
 import GameKeeper.Options
-import System.Exit            (ExitCode(..), exitWith)
-import Text.Printf            (printf)
+import System.Exit       (ExitCode(..), exitWith)
+import Text.Printf       (printf)
 
 --
 -- API
@@ -65,45 +65,48 @@ mode PruneQueues{..} = do
     qs <- listQueues optUri
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
-mode CheckNode{..} = exec $ Plugin "NODE"
-    [ check
-      { name     = "BACKLOG"
-      , value    = liftM (total . count) (showOverview optUri)
-      , health   = optMessages
-      , ok       = printf "%.0f messages ready"
-      , critical = printf "%.0f/.0%f messages ready"
-      , warning  = printf "%.0f/.0%f messages ready"
-      }
-    , check
-      { name     = "MEMORY"
-      , value    = liftM used (showNode optUri optName)
-      , health   = optMemory
-      , ok       = printf "%.2fGB mem used"
-      , critical = printf "%.2f/%.2fGB mem used"
-      , warning  = printf "%.2/%.2fGB mem used"
-      }
-    ]
+mode CheckNode{..} = do
+    overview <- try $ showOverview optUri
+    node     <- try $ showNode optUri optName
+    exec $ Plugin "NODE"
+        [ check
+          { name     = "BACKLOG"
+          , value    = transpose overview (total . count)
+          , health   = optMessages
+          , ok       = printf "%.0f messages ready"
+          , critical = printf "%.0f/.0%f messages ready"
+          , warning  = printf "%.0f/.0%f messages ready"
+          }
+        , check
+          { name     = "MEMORY"
+          , value    = transpose node used
+          , health   = optMemory
+          , ok       = printf "%.2fGB mem used"
+          , critical = printf "%.2f/%.2fGB mem used"
+          , warning  = printf "%.2/%.2fGB mem used"
+          }
+        ]
 
-mode CheckQueue{..} = exec $ Plugin "QUEUE"
-    [ check
-      { name     = "BACKLOG"
-      , value    = liftM messages queue
-      , health   = optMessages
-      , ok       = printf "%.0f messages ready"
-      , critical = printf "%.0f/.0%f messages ready"
-      , warning  = printf "%.0f/.0%f messages ready"
-      }
-    , check
-      { name     = "MEMORY"
-      , value    = liftM memory queue
-      , health   = optMemory
-      , ok       = printf "%.2fMB mem used"
-      , critical = printf "%.2f/%.2fMB mem used"
-      , warning  = printf "%.2/%.2fMB mem used"
-      }
-    ]
-  where
-    queue = showQueue optUri optName
+mode CheckQueue{..} = do
+    queue <- try $ showQueue optUri optName
+    exec $ Plugin "QUEUE"
+        [ check
+          { name     = "BACKLOG"
+          , value    = transpose queue messages
+          , health   = optMessages
+          , ok       = printf "%.0f messages ready"
+          , critical = printf "%.0f/.0%f messages ready"
+          , warning  = printf "%.0f/.0%f messages ready"
+          }
+        , check
+          { name     = "MEMORY"
+          , value    = transpose queue memory
+          , health   = optMemory
+          , ok       = printf "%.2fMB mem used"
+          , critical = printf "%.2f/%.2fMB mem used"
+          , warning  = printf "%.2/%.2fMB mem used"
+          }
+        ]
 
 mode _ = logError err >> error err
   where

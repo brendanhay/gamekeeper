@@ -23,11 +23,11 @@ module GameKeeper.Nagios (
     -- * Functions
     , check
     , exec
+    , transpose
     ) where
 
 import Prelude           hiding (catch)
 import Control.Exception
-import Control.Monad
 import Data.List                (intercalate)
 
 import qualified Data.ByteString.Char8 as BS
@@ -75,7 +75,7 @@ data Plugin = Plugin Service [Check]
 
 data Check = Check
     { name     :: Service
-    , value    :: IO Double
+    , value    :: Either SomeException Double
     , health   :: Health
     , ok       :: Double -> Message
     , warning  :: Double -> Double -> Message
@@ -89,7 +89,7 @@ data Check = Check
 check :: Check
 check = Check
     { name     = "CHECK"
-    , value    = return 0
+    , value    = Right 0
     , health   = Health 0 0
     , ok       = \_   -> ""
     , warning  = \_ _ -> ""
@@ -98,13 +98,19 @@ check = Check
 
 exec :: Plugin -> IO ()
 exec (Plugin service checks) = do
-    res <- mapM f checks
-    let acc = fold service res
     BS.putStrLn $ format acc
     mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
-    f chk = liftM (status chk) (try $ value chk)
+    f chk = status chk $ value chk
+    res   = map f checks
+    acc   = fold service res
+
+transpose :: Either SomeException a
+          -> (a -> Double)
+          -> Either SomeException Double
+transpose (Left l) _  = Left l
+transpose (Right r) f = Right (f r)
 
 --
 -- Private
