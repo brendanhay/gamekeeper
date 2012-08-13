@@ -26,7 +26,7 @@ module GameKeeper.Nagios (
 
 import Prelude           hiding (catch)
 import Control.Exception
-import Data.List                (intercalate)
+import Data.List                (nub, intercalate)
 
 import qualified Data.ByteString.Char8 as BS
 import qualified System.Exit           as E
@@ -116,7 +116,7 @@ fold serv lst | length ok == length lst = OK serv "All services healthy"
   where
     [ok, warn, crit, unkn] = split lst
     any' = not . null
-    text = intercalate ", " . map message
+    text = intercalate ", " . nub . map message
 
 split :: [Status] -> [[Status]]
 split lst = map f [0..3]
