@@ -26,7 +26,9 @@ import Data.Word                              (Word16)
 import Data.Version                           (showVersion)
 import Paths_gamekeeper                       (version)
 import System.Console.CmdArgs.Explicit hiding (modes)
+import System.Console.CmdArgs.Verbosity
 import System.Environment                     (getArgs)
+import System.IO.Unsafe                       (unsafePerformIO)
 import GameKeeper.Http
 import GameKeeper.Metric               hiding (measure)
 import GameKeeper.Nagios                      (Health(..))
@@ -225,7 +227,13 @@ program = subMode
 --
 
 appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
-appendDefaults m = (++ [helpFlag $ Help m])
+appendDefaults m = (++ ([helpFlag $ Help m] ++ verbosityFlags))
+
+verbosityFlags :: [Flag Options]
+verbosityFlags = flagsVerbosity f
+  where
+    f v o = unsafePerformIO $ do setVerbosity v; return o
+{-# NOINLINE verbosityFlags #-}
 
 uriFlag :: Flag Options
 uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help

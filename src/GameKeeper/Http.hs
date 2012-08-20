@@ -76,18 +76,19 @@ delete = request "DELETE"
 request :: Method -> Uri -> IO BL.ByteString
 request method uri = withManager $ \manager -> do
         Response _ _ _ body <- httpLbs req { method = method } manager
-        liftIO . logInfo $ concat ["[", show method, "] -> ", abspath uri]
-        liftIO . logInfo $ concat
-            [ "["
-            , printf "%.2f" $ kb body
-            , " kB"
-            , "] <- "
-            , abspath uri
-            ]
+        liftIO $ do
+            debug ["[", show method, "] -> ", abspath uri]
+            debug [ "["
+                  , printf "%.2f" $ kb body
+                  , " kB"
+                  , "] <- "
+                  , abspath uri
+                  ]
         return body
   where
     req     = prepare uri
     kb bstr = (/ 1024) . fromIntegral $ BL.length bstr :: Float
+    debug   = logDebug . concat
 
 prepare :: Uri -> Request m
 prepare uri@Uri{..} = case parseUrl $ abspath uri of

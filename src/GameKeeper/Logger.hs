@@ -17,10 +17,11 @@ module GameKeeper.Logger (
     , logError
     ) where
 
-import Prelude       hiding (log)
+import Prelude                   hiding (log)
 import Data.Time
-import System.Locale
+import System.Console.CmdArgs.Verbosity
 import System.IO
+import System.Locale
 
 data Severity = Debug | Info | Error deriving (Show)
 
@@ -29,8 +30,8 @@ data Severity = Debug | Info | Error deriving (Show)
 --
 
 logDebug, logInfo, logError :: String -> IO ()
-logDebug = log Debug
-logInfo  = log Info
+logDebug = whenLoud . log Debug
+logInfo  = whenNormal . log Info
 logError = log Error
 
 --
