@@ -66,6 +66,7 @@ mode PruneConnections{..} = do
 
 mode PruneQueues{..} = do
     qs <- listQueues optUri
+    putStrLn $ "Unused Queues Found: " ++ show (length qs)
     mapM_ (deleteQueue optUri) . idle $ unusedQueues qs
 
 mode CheckNode{..} = do
