@@ -137,7 +137,7 @@ symbol s = case enum s of
     _ -> "UNKNOWN"
 
 format :: Status -> BS.ByteString
-format s = BS.concat [symbol s, " ", service s, " - ", BS.pack $ message s]
+format s = BS.concat [symbol s, ": ", service s, " - ", BS.pack $ message s]
 
 code :: Status -> E.ExitCode
 code (OK _ _) = E.ExitSuccess
