@@ -88,7 +88,7 @@ data Check = Check
 check :: Plugin -> IO ()
 check (Plugin title service checks) = do
     BS.putStrLn $ format acc
-    mapM_ (BS.putStrLn . format) res
+    -- mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
     res = map status checks
@@ -99,10 +99,10 @@ check (Plugin title service checks) = do
 --
 
 status :: Check -> Status
-status Check{ name = name, value = Left e } = Unknown name $ show e
+status Check{ name = name, value = Left e } = Unknown  name $ show e
 status Check{..} | n >= y                   = Critical name $ critical n x
-                 | n >= x                   = Warning name $ warning n y
-                 | otherwise                = OK name $ ok n
+                 | n >= x                   = Warning  name $ warning n y
+                 | otherwise                = OK       name $ ok n
   where
     (Right n)    = value
     (Health x y) = health
@@ -110,9 +110,9 @@ status Check{..} | n >= y                   = Critical name $ critical n x
 fold :: Service -> [Status] -> Status
 fold serv lst | length ok == length lst = OK serv "All services healthy"
               | any' crit               = Critical serv $ text crit
-              | any' unkn               = Unknown serv $ text unkn
-              | any' warn               = Warning serv $ text warn
-              | otherwise               = Unknown serv $ text unkn
+              | any' unkn               = Unknown  serv $ text unkn
+              | any' warn               = Warning  serv $ text warn
+              | otherwise               = Unknown  serv $ text unkn
   where
     [ok, warn, crit, unkn] = split lst
     any' = not . null
