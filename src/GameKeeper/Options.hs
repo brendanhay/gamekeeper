@@ -262,12 +262,12 @@ healthFlag name upd = flagReq [name] f "WARN,CRIT"
 messagesFlag :: String -> Flag Options
 messagesFlag = healthFlag "messages" upd
   where
-    upd o w c = o { optMemory = Health w c }
+    upd o w c = o { optMessages = Health w c }
 
 memoryFlag :: String -> Flag Options
 memoryFlag = healthFlag "memory" upd
   where
-    upd o w c = o { optMessages = Health w c }
+    upd o w c = o { optMemory = Health w c }
 
 sinkFlag :: String -> Flag Options
 sinkFlag = flagReq ["sink"] upd "SINK,HOST,PORT"
