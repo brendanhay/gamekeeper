@@ -76,7 +76,7 @@ data Check = Check
 check :: Plugin -> IO ()
 check (Plugin title serv checks) = do
     BS.putStrLn $ format acc
-    mapM_ (BS.putStrLn . format) res
+--    mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
     res = map (status serv) checks
