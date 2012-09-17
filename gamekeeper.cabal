@@ -1,5 +1,5 @@
 name:               gamekeeper
-version:            0.2.1
+version:            0.2.2
 synopsis:           Management and monitoring tools for RabbitMQ
 license:            OtherLicense
 license-file:       LICENSE
