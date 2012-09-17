@@ -74,20 +74,20 @@ mode CheckNode{..} = do
     node <- try $ showNode optUri optName
     check $ Plugin "NODE" optName
         [ Check
-          { name     = "BACKLOG"
+          { title    = "BACKLOG"
           , value    = liftM (total . count) over
           , health   = optMessages
-          , ok       = printf "%.0f messages ready"
-          , critical = printf "%.0f / %.0f messages ready"
-          , warning  = printf "%.0f / %.0f messages ready"
+          , ok       = printf "%s %.0f messages ready"
+          , critical = printf "%s %.0f / %.0f messages ready"
+          , warning  = printf "%s %.0f / %.0f messages ready"
           }
         , Check
-          { name     = "MEMORY"
+          { title    = "MEMORY"
           , value    = liftM used node
           , health   = optMemory
-          , ok       = printf "%.2fGB mem used"
-          , critical = printf "%.2f / %.2fGB mem used"
-          , warning  = printf "%.2f / %.2fGB mem used"
+          , ok       = printf "%s %.2fGB mem used"
+          , critical = printf "%s %.2f / %.2fGB mem used"
+          , warning  = printf "%s %.2f / %.2fGB mem used"
           }
         ]
 
@@ -95,20 +95,20 @@ mode CheckQueue{..} = do
     queue <- try $ showQueue optUri optName
     check $ Plugin "QUEUE" optName
         [ Check
-          { name     = "BACKLOG"
+          { title    = "BACKLOG"
           , value    = liftM messages queue
           , health   = optMessages
-          , ok       = printf "%.0f messages ready"
-          , critical = printf "%.0f / %.0f messages ready"
-          , warning  = printf "%.0f / %.0f messages ready"
+          , ok       = printf "%s %.0f messages ready"
+          , critical = printf "%s %.0f / %.0f messages ready"
+          , warning  = printf "%s %.0f / %.0f messages ready"
           }
         , Check
-          { name     = "MEMORY"
+          { title    = "MEMORY"
           , value    = liftM memory queue
           , health   = optMemory
-          , ok       = printf "%.2fMB mem used"
-          , critical = printf "%.2f / %.2fMB mem used"
-          , warning  = printf "%.2f / %.2fMB mem used"
+          , ok       = printf "%s %.2fMB mem used"
+          , critical = printf "%s %.2f / %.2fMB mem used"
+          , warning  = printf "%s %.2f / %.2fMB mem used"
           }
         ]
 

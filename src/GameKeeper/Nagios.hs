@@ -38,29 +38,17 @@ type Message = String
 data Health  = Health Double Double deriving (Eq, Show)
 
 data Status
-    = OK
-      { service :: Service
-      , message :: Message
-      }
+    = OK { title' :: Title, message :: Message }
       -- ^ The plugin was able to check the service and
       --   it appeared to be functioning properly
-    | Warning
-      { service :: Service
-      , message :: Message
-      }
+    | Warning { title' :: Title, message :: Message }
       -- ^ The plugin was able to check the service,
       --   but it appeared to be above some "warning"
       --   threshold or did not appear to be working properly
-    | Critical
-      { service :: Service
-      , message :: Message
-      }
+    | Critical { title' :: Title, message :: Message }
       -- ^ The plugin detected that either the service was
       --   not running or it was above some "critical" threshold
-    | Unknown
-      { service :: Service
-      , message :: Message
-      }
+    | Unknown { title' :: Title, message :: Message }
       -- ^ Invalid command line arguments were supplied
       --   to the plugin or low-level failures internal
       --   to the plugin (such as unable to fork, or open a tcp socket)
@@ -73,12 +61,12 @@ data Status
 data Plugin = Plugin Title Service [Check]
 
 data Check = Check
-    { name     :: Service
+    { title    :: Title
     , value    :: Either SomeException Double
     , health   :: Health
-    , ok       :: Double -> Message
-    , warning  :: Double -> Double -> Message
-    , critical :: Double -> Double -> Message
+    , ok       :: String -> Double -> Message
+    , warning  :: String -> Double -> Double -> Message
+    , critical :: String -> Double -> Double -> Message
     }
 
 --
@@ -86,29 +74,30 @@ data Check = Check
 --
 
 check :: Plugin -> IO ()
-check (Plugin title service checks) = do
+check (Plugin title serv checks) = do
     BS.putStrLn $ format acc
-    -- mapM_ (BS.putStrLn . format) res
+    mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
-    res = map status checks
-    acc = fold (BS.concat [title, " ", service]) res
+    res = map (status serv) checks
+    acc = fold title res
 
 --
 -- Private
 --
 
-status :: Check -> Status
-status Check{ name = name, value = Left e } = Unknown  name $ show e
-status Check{..} | n >= y                   = Critical name $ critical n x
-                 | n >= x                   = Warning  name $ warning n y
-                 | otherwise                = OK       name $ ok n
+status :: Service -> Check -> Status
+status _    Check{ title = title, value = Left e } = Unknown  title $ show e
+status serv Check{..} | n >= y                     = Critical title $ critical serv' n x
+                      | n >= x                     = Warning  title $ warning serv' n y
+                      | otherwise                  = OK       title $ ok serv' n
   where
     (Right n)    = value
     (Health x y) = health
+    serv'        = BS.unpack serv
 
 fold :: Service -> [Status] -> Status
-fold serv lst | length ok == length lst = OK serv "All services healthy"
+fold serv lst | length ok == length lst = OK       serv "All services healthy"
               | any' crit               = Critical serv $ text crit
               | any' unkn               = Unknown  serv $ text unkn
               | any' warn               = Warning  serv $ text warn
@@ -137,7 +126,7 @@ symbol s = case enum s of
     _ -> "UNKNOWN"
 
 format :: Status -> BS.ByteString
-format s = BS.concat [symbol s, ": ", service s, " - ", BS.pack $ message s]
+format s = BS.concat [title' s, " ", symbol s, ": ", BS.pack $ message s]
 
 code :: Status -> E.ExitCode
 code (OK _ _) = E.ExitSuccess
