@@ -78,16 +78,16 @@ mode CheckNode{..} = do
           , value    = liftM (total . count) over
           , health   = optMessages
           , ok       = printf "%.0f messages ready"
-          , critical = printf "%.0f/.0%f messages ready"
-          , warning  = printf "%.0f/.0%f messages ready"
+          , critical = printf "%.0f / %.0f messages ready"
+          , warning  = printf "%.0f / %.0f messages ready"
           }
         , Check
           { name     = "MEMORY"
           , value    = liftM used node
           , health   = optMemory
           , ok       = printf "%.2fGB mem used"
-          , critical = printf "%.2f/%.2fGB mem used"
-          , warning  = printf "%.2/%.2fGB mem used"
+          , critical = printf "%.2f / %.2fGB mem used"
+          , warning  = printf "%.2f / %.2fGB mem used"
           }
         ]
 
@@ -99,16 +99,16 @@ mode CheckQueue{..} = do
           , value    = liftM messages queue
           , health   = optMessages
           , ok       = printf "%.0f messages ready"
-          , critical = printf "%.0f/.0%f messages ready"
-          , warning  = printf "%.0f/.0%f messages ready"
+          , critical = printf "%.0f / %.0f messages ready"
+          , warning  = printf "%.0f / %.0f messages ready"
           }
         , Check
           { name     = "MEMORY"
           , value    = liftM memory queue
           , health   = optMemory
           , ok       = printf "%.2fMB mem used"
-          , critical = printf "%.2f/%.2fMB mem used"
-          , warning  = printf "%.2/%.2fMB mem used"
+          , critical = printf "%.2f / %.2fMB mem used"
+          , warning  = printf "%.2f / %.2fMB mem used"
           }
         ]
 
