@@ -18,6 +18,7 @@ module Main (
 import Control.Concurrent
 import Control.Exception (try, finally)
 import Control.Monad     (liftM)
+import Network.BSD       (getHostName)
 import System.IO         (BufferMode(..), stderr, hSetBuffering)
 import System.IO.Unsafe  (unsafePerformIO)
 import GameKeeper.API
@@ -27,6 +28,9 @@ import GameKeeper.Nagios
 import GameKeeper.Options
 import System.Exit       (ExitCode(..), exitWith)
 import Text.Printf       (printf)
+import Text.Regex
+
+import qualified Data.ByteString.Char8 as BS
 
 --
 -- API
@@ -46,7 +50,8 @@ main = do
 
 mode :: Options -> IO ()
 mode Measure{..} = do
-    sink <- open optSink
+    host <- getHostName >>= return . BS.pack . safe
+    sink <- open host optSink
     forkAll [ showOverview optUri >>= push sink
             , listConnections optUri >>= idleConnections optDays >>= push sink
             , listChannels optUri >>= push sink
@@ -58,6 +63,8 @@ mode Measure{..} = do
             ]
     wait
     close sink
+  where
+    safe str = subRegex (mkRegex "\\.") str "_"
 
 mode PruneConnections{..} = do
     cs <- liftM idle (listConnections optUri >>= idleConnections optDays)

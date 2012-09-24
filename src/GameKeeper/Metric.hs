@@ -45,9 +45,9 @@ import qualified Network.Metric             as M
 import qualified Network.Metric.Sink.Handle as H
 
 data SinkOptions = SinkOptions
-    { sinkType :: M.SinkType
-    , sinkHost :: String
-    , sinkPort :: Word16
+    { sinkType  :: M.SinkType
+    , sinkHost  :: String
+    , sinkPort  :: Word16
     } deriving (Data, Typeable, Read, Show)
 
 --
@@ -57,12 +57,11 @@ data SinkOptions = SinkOptions
 defaultSinkOpts :: SinkOptions
 defaultSinkOpts = SinkOptions M.Stdout "" 0
 
-open :: SinkOptions -> IO M.AnySink
-open SinkOptions{..} = sink
+open :: BS.ByteString -> SinkOptions -> IO M.AnySink
+open host SinkOptions{..} = sink
   where
     sink | sinkType == M.Stdout = return . M.AnySink $ H.SinkHandle host logInfo
          | otherwise            = M.open sinkType host sinkHost port
-    host = "localhost"
     port = PortNum sinkPort
 
 group :: M.Group
