@@ -38,17 +38,29 @@ type Message = String
 data Health  = Health Double Double deriving (Eq, Show)
 
 data Status
-    = OK { title' :: Title, message :: Message }
+    = OK
+      { title'  :: Title
+      , message :: Message
+      }
       -- ^ The plugin was able to check the service and
       --   it appeared to be functioning properly
-    | Warning { title' :: Title, message :: Message }
+    | Warning
+      { title'  :: Title
+      , message :: Message
+      }
       -- ^ The plugin was able to check the service,
       --   but it appeared to be above some "warning"
       --   threshold or did not appear to be working properly
-    | Critical { title' :: Title, message :: Message }
+    | Critical
+      { title'  :: Title
+      , message :: Message
+      }
       -- ^ The plugin detected that either the service was
       --   not running or it was above some "critical" threshold
-    | Unknown { title' :: Title, message :: Message }
+    | Unknown
+      { title'  :: Title
+      , message :: Message
+      }
       -- ^ Invalid command line arguments were supplied
       --   to the plugin or low-level failures internal
       --   to the plugin (such as unable to fork, or open a tcp socket)
@@ -76,7 +88,7 @@ data Check = Check
 check :: Plugin -> IO ()
 check (Plugin title serv checks) = do
     BS.putStrLn $ format acc
---    mapM_ (BS.putStrLn . format) res
+    mapM_ (BS.putStrLn . format) res
     E.exitWith $ code acc
   where
     res = map (status serv) checks
