@@ -1,5 +1,5 @@
 name:               gamekeeper
-version:            0.2.4
+version:            0.2.5
 synopsis:           Management and monitoring tools for RabbitMQ
 license:            OtherLicense
 license-file:       LICENSE
@@ -54,3 +54,4 @@ executable gamekeeper
                   , time
                   , old-locale
                   , split
+                  , regex-compat
