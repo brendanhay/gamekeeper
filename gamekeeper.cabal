@@ -54,3 +54,4 @@ executable gamekeeper
                   , time
                   , old-locale
                   , split
+                  , regex-compat
