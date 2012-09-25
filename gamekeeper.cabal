@@ -1,5 +1,5 @@
 name:               gamekeeper
-version:            0.2.7
+version:            0.2.8
 synopsis:           Management and monitoring tools for RabbitMQ
 license:            OtherLicense
 license-file:       LICENSE
@@ -45,7 +45,7 @@ executable gamekeeper
                   , http-conduit
                   , http-types
                   , network
-                  , network-metrics >= 0.2.5
+                  , network-metrics >= 0.2.6
                   , utf8-string
                   , bytestring
                   , vector
@@ -55,3 +55,4 @@ executable gamekeeper
                   , old-locale
                   , split
                   , regex-compat
+
