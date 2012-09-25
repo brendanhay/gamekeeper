@@ -73,7 +73,7 @@ bucket a b = BS.intercalate "." [a, b]
 esc :: M.Bucket -> M.Bucket
 esc = BS.map fn
   where
-    fn '.' = '/'
+    fn '.' = '_'
     fn c   = c
 
 len :: [a] -> Double
