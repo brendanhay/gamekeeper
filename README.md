@@ -16,7 +16,14 @@
 
 ## Introduction
 
-> TODO
+gamekeeper is a low resource application to perform multiple roles for
+your RabbitMQ infrastructure:
+
+* The ability to poll either a local or remote RabbitMQ HTTP API for metrics
+  which are then delivered to either Ganglia, Graphite, or stdout.
+* It serves as a Nagios NPRE plugin endpoint for monitoring a node or
+  individual queues' health.
+* Node management features such as pruning of idle connections and inactive queues.
 
 
 ## Functionality
