@@ -1,10 +1,11 @@
-CABAL=`which cabal-dev`
+SHELL := /bin/bash
+CABAL := `which cabal-dev`
 
 #
-# Targets
+# Build
 #
 
-.PHONY: install build conf clean prof
+.PHONY: install build install clean dist test conf prof
 
 all: build
 
@@ -14,15 +15,32 @@ build:
 install:
 	$(CABAL) install
 
-conf:
-	$(CABAL) configure
-
 clean:
 	$(CABAL) clean
 
-prof: clean
+#
+# Configure
+#
+
+conf:
+	$(CABAL) configure
+	$(MAKE) build
+
+bench:
+	$(CABAL) configure --enable-benchmarks
+	$(MAKE) build
+
+test:
+	$(CABAL) configure --enable-tests
+	$(MAKE) build
+
+prof:
 	$(CABAL) configure --enable-executable-profiling
-	$(MAKE) install
-	./gamekeeper --service=prof
+	$(MAKE) build
 
+#
+# Interactive
+#
 
+ghci:
+	$(CABAL) ghci
