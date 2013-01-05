@@ -159,7 +159,7 @@ measure = subMode
     , def   = Measure uri oneMonth defaultSinkOpts
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [ uriFlag
-              , daysFlag "Number of days before a connection is considered stale"
+              , daysFlag "Number of days before a connection is considered idle"
               , sinkFlag "Sink options describing the type and host/port combination"
               ]
     }
@@ -170,7 +170,7 @@ pruneConnections = subMode
     , def   = PruneConnections uri oneMonth
     , help  = "Perform idle connection pruning"
     , flags = [ uriFlag
-              , daysFlag "Number of days before a connection is considered stale"
+              , daysFlag "Number of days before a connection is considered idle"
               ]
     }
 

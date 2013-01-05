@@ -234,6 +234,29 @@ the top-level program and various subcommands via the `--help` switch.
     <td>Memory thresholds, in Megabytes</td>
   </tr>
 
+  <tr>
+    <td rowspan="2"><code>prune connections</code></td>
+    <td><code>--uri</code></td>
+    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>URI</code></td>
+    <td>Address of the RabbitMQ API to poll</td>
+  </tr>
+
+  <tr>
+    <td><code>--days</code></td>
+    <td><code>30</code></td>
+    <td><code>INT</code></td>
+    <td>Number of days before a connection is considered idle</td>
+  </tr>
+
+  <tr>
+    <td><code>prune queues</code></td>
+    <td><code>--uri</code></td>
+    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>URI</code></td>
+    <td>Address of the RabbitMQ API to poll</td>
+  </tr>
+
 </table>
 
 > There is also a `--verbose` switch which is useful when debugging metric emission to stdout
