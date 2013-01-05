@@ -76,6 +76,8 @@ identifier: `<node_name>.rabbit.`
 * `queue.messages.<name>` - Ready messages per queue
 * `queue.consumers.<name>` - Consumers per queue
 * `queue.memory.<name>` - Memory usage per queue
+* `queue.ingress.<name>` - Average message ingress per queue
+* `queue.egress.<name>` - Average message ingress per queue
 
 **Bindings**
 

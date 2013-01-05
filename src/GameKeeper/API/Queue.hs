@@ -41,6 +41,8 @@ data Queue = Queue
     , messages  :: Double
     , consumers :: Double
     , memory    :: Double
+    , ingress   :: Double
+    , egress    :: Double
     } deriving (Show)
 
 instance FromJSON Queue where
@@ -50,6 +52,12 @@ instance FromJSON Queue where
         <*> o .: "messages"
         <*> o .: "consumers"
         <*> liftM megabytes (o .: "memory")
+        <*> backing "avg_ingress_rate"
+        <*> backing "avg_egress_rate"
+      where
+        backing k = do
+            v <- o .:? "backing_queue_status"
+            return . fromMaybe 0 $ v >>= parseMaybe (.: k)
     parseJSON _ = empty
 
 instance Measurable [(Bool, Queue)] where
@@ -63,6 +71,8 @@ instance Measurable Queue where
         [ Gauge group (bucket "queue.messages" $ esc name) messages
         , Gauge group (bucket "queue.consumers" $ esc name) consumers
         , Gauge group (bucket "queue.memory" $ esc name) memory
+        , Gauge group (bucket "queue.ingress" $ esc name) ingress
+        , Gauge group (bucket "queue.egress" $ esc name) egress
         ]
 
 --
@@ -78,7 +88,8 @@ showQueue uri name = do
     query = "?columns=name,vhost,messages,consumers,memory"
 
 listQueues :: Uri -> IO [Queue]
-listQueues uri = list uri "api/queues" query decode
+listQueues uri =
+    filter (("amq.gen" `isPrefixOf`) . name) $ list uri "api/queues" query decode
   where
     decode b = decode' b :: Maybe (Vector Queue)
     query    = "?columns=name,vhost,messages,consumers,memory"
