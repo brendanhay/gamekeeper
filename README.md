@@ -78,17 +78,51 @@ The output sink can be configured to emit to `Stdout,,`,
 `Ganglia,<host>,<port>`, or `Graphite,<host>,<port>` using the `--sink`
 argument. The underlying [network-metrics](http://github.com/brendanhay/network-metrics) also
 supports writing to `Statsd,<host>,<port>` but this is pointless, and not
-recommended due to the fact the RabbitMQ management plugin performs aggregation.
+recommended due to the fact the RabbitMQ management plugin performs pre-aggregation.
 
-> At time of writing [SoundCloud](http://www.soundcloud.com) emits to Ganglia, using gamekeeper
+By default metrics will be printed to stdout.
+
+> At time of writing [SoundCloud](http://www.soundcloud.com) emits all
+> RabbitMQ metrics to Ganglia specifically
 
 ### Check
 
-> TODO
+The `check` subcommand is used to perform a high-level inspection of
+either the general node health, or a specific queue's health.
+
+All output is to `stdout` in the
+[Nagios NPRE Plugin](http://nagiosplug.sourceforge.net/developer-guidelines.html)
+format.
+
+**Node**
+
+The Distributed Erlang [sname](http://www.erlang.org/doc/reference_manual/distributed.html) of the
+RabbitMQ node needs to be specified via the `--name` argument, so gamekeeper can calculate the correct HTTP API uri to
+request. For example, the node `rabbit@localhost` would result in HTTP requests to `http://localhost:15672/#/nodes/rabbit%40localhost`
+
+Warning and critical levels can be specified for both message residence
+and memory usage. A single check is performed and the output is combined.
+
+A warning or critical for either memory residence or memory usage will
+result in the most severe being used as the NPRE exit code and one line
+summary.
+
+> The memory usage warning and critical levels are specified in Gigabyte units
+
+**Queue**
+
+Queue checks are the same as the node level check, but local to a specifically
+named queue.
+
+> The memory usage warning and critical levels are specified in Megabyte units
 
 ### Prune
 
-> TODO
+The `prune` subcommand is used via a manual invocation of gamekeeper and is
+used to remove (via HTTP DELETE) idle connections and unused queues.
+
+This is primarily useful if you do not use AMQP heartbeats and have problems
+with dangling load-balancer connections through something like LVS or HAProxy.
 
 
 ## Install
@@ -119,7 +153,7 @@ recommended due to the fact the RabbitMQ management plugin performs aggregation.
   <tr>
     <td><code>measure</code></td>
     <td><code>--uri</code></td>
-    <td><code>http://guest:guest@localhost:5672</code></td>
+    <td><code>http://guest:guest@localhost:15672</code></td>
     <td><code>URI</code></td>
     <td>Address of the RabbitMQ API to poll</td>
   </tr>
