@@ -4,6 +4,9 @@
 
 * [Introduction](#introduction)
 * [Functionality](#functionality)
+    - [Measure](#measure)
+    - [Check](#check)
+    - [Prune](#prune)
 * [Install](#install)
 * [Configuration](#configuration)
 * [Running](#running)
@@ -32,38 +35,53 @@ identifier: `<node_name>.rabbit.`
 The `<node_name>` constant is currently determined by escaping the local
 hostname, and will be configurable in a future release.
 
-* Overview
-    - `message.total`
-    - `message.ready`
-    - `message.unacked`
-    - `rate.publish`
-    - `rate.deliver`
-    - `rate.redeliver`
-    - `rate.confirm`
-    - `rate.ack`
-* Connections
-    - `connection.total`
-    - `connection.idle` - Calculated relative to the specified `--days` setting
-* Channels
-    - `channel.total`
-    - `channel.publisher` - Number of publisher/ingress channels
-    - `channel.consumer` - Number of consumer/egress channels
-    - `channel.duplex` - Number of channels marked as both publishing and consuming
-    - `channel.inactive`
-* Exchanges
-    - `exchange.rate.<name>` - Message rate per exchange
-* Queues
-    - `queue.total`
-    - `queue.idle` - Determined by message residence and flow
-    - `queue.messages.<name>` - Ready messages per queue
-    - `queue.consumers.<name>` - Consumers per queue
-    - `queue.memory.<name>` - Memory usage per queue
-* Bindings
-    - `binding.total` - Overall of AMQP bindings
+**Overview**
+
+* `message.total`
+* `message.ready`
+* `message.unacked`
+* `rate.publish`
+* `rate.deliver`
+* `rate.redeliver`
+* `rate.confirm`
+* `rate.ack`
+
+**Connections**
+
+* `connection.total`
+* `connection.idle` - Calculated relative to the specified `--days` setting
+
+**Channels**
+
+* `channel.total`
+* `channel.publisher` - Number of publisher/ingress channels
+* `channel.consumer` - Number of consumer/egress channels
+* `channel.duplex` - Number of channels marked as both publishing and consuming
+* `channel.inactive`
+
+**Exchanges**
+
+* `exchange.rate.<name>` - Message rate per exchange
+
+**Queues**
+
+* `queue.total`
+* `queue.idle` - Determined by message residence and flow
+* `queue.messages.<name>` - Ready messages per queue
+* `queue.consumers.<name>` - Consumers per queue
+* `queue.memory.<name>` - Memory usage per queue
+
+**Bindings**
+
+* `binding.total` - Overall number of AMQP bindings
 
 ### Check
 
+> TODO
+
 ### Prune
+
+> TODO
 
 
 ## Install
