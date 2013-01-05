@@ -154,12 +154,8 @@ the top-level program and various subcommands via the `--help` switch.
     <th>About</th>
   </tr>
 
-</table>
-
-<table width="100%">
-
   <tr>
-    <td><code>measure</code></td>
+    <td rowspawn="3"><code>measure</code></td>
     <td><code>--uri</code></td>
     <td><code>http://guest:guest@localhost:15672</code></td>
     <td><code>URI</code></td>
@@ -167,7 +163,6 @@ the top-level program and various subcommands via the `--help` switch.
   </tr>
 
   <tr>
-    <td><code>measure</code></td>
     <td><code>--days</code></td>
     <td><code>30</code></td>
     <td><code>INT</code></td>
@@ -175,7 +170,6 @@ the top-level program and various subcommands via the `--help` switch.
   </tr>
 
   <tr>
-    <td><code>measure</code></td>
     <td><code>--sink</code></td>
     <td><code>Stdout,,</code></td>
     <td><code>SINK,HOST,PORT</code></td>
