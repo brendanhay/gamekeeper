@@ -155,7 +155,7 @@ the top-level program and various subcommands via the `--help` switch.
   </tr>
 
   <tr>
-    <td rowspawn="3"><code>measure</code></td>
+    <td rowspan="3"><code>measure</code></td>
     <td><code>--uri</code></td>
     <td><code>http://guest:guest@localhost:15672</code></td>
     <td><code>URI</code></td>
@@ -176,7 +176,68 @@ the top-level program and various subcommands via the `--help` switch.
     <td>Sink options describing the type and host/port combination</td>
   </tr>
 
+  <tr>
+    <td rowspan="3"><code>check node</code></td>
+    <td><code>--name</code></td>
+    <td></td>
+    <td><code>STR</code></td>
+    <td>An Erlang atom represent the RabbitMQ node name</td>
+  </tr>
+
+  <tr>
+    <td><code>--uri</code></td>
+    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>URI</code></td>
+    <td>Address of the RabbitMQ API to poll</td>
+  </tr>
+
+  <tr>
+    <td><code>--messages</code></td>
+    <td><code>15000000,30000000</code></td>
+    <td><code>WARN,CRIT</code></td>
+    <td>Message residence thresholds</td>
+  </tr>
+
+  <tr>
+    <td><code>--memory</code></td>
+    <td><code>4,8</code></td>
+    <td><code>WARN,CRIT</code></td>
+    <td>Memory thresholds, in Gigabytes</td>
+  </tr>
+
+  <tr>
+    <td rowspan="3"><code>check queue</code></td>
+    <td><code>--name</code></td>
+    <td></td>
+    <td><code>STR</code></td>
+    <td>The name of the queue to check</td>
+  </tr>
+
+  <tr>
+    <td><code>--uri</code></td>
+    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>URI</code></td>
+    <td>Address of the RabbitMQ API to poll</td>
+  </tr>
+
+  <tr>
+    <td><code>--messages</code></td>
+    <td><code>125000,250000</code></td>
+    <td><code>WARN,CRIT</code></td>
+    <td>Message residence thresholds</td>
+  </tr>
+
+  <tr>
+    <td><code>--memory</code></td>
+    <td><code>250,500</code></td>
+    <td><code>WARN,CRIT</code></td>
+    <td>Memory thresholds, in Megabytes</td>
+  </tr>
+
 </table>
+
+> There is also a `--verbose` switch which is useful when debugging metric emission to stdout
+
 
 ## Running
 
