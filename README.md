@@ -2,10 +2,73 @@
 
 ## Table of Contents
 
+* [Introduction](#introduction)
+* [Functionality](#functionality)
+* [Install](#install)
 * [Configuration](#configuration)
 * [Running](#running)
 * [Contribute](#contribute)
 * [Licence](#licence)
+
+
+## Introduction
+
+> TODO
+
+
+## Functionality
+
+gamekeeper has three modes of operation, each corresponding to a different
+subset of functionality.
+
+### Measure
+
+The `measure` subcommand will emit a series of metrics from the specified
+`--uri` for a number of RabbitMQ/AMQP primitives.
+
+All metrics are prefixed into sinks (Ganglia, Graphite, etc) with the
+identifier: `<node_name>.rabbit.`
+
+The `<node_name>` constant is currently determined by escaping the local
+hostname, and will be configurable in a future release.
+
+* Overview
+    - `message.total`
+    - `message.ready`
+    - `message.unacked`
+    - `rate.publish`
+    - `rate.deliver`
+    - `rate.redeliver`
+    - `rate.confirm`
+    - `rate.ack`
+* Connections
+    - `connection.total`
+    - `connection.idle` - Calculated relative to the specified `--days` setting
+* Channels
+    - `channel.total`
+    - `channel.publisher` - Number of publisher/ingress channels
+    - `channel.consumer` - Number of consumer/egress channels
+    - `channel.duplex` - Number of channels marked as both publishing and consuming
+    - `channel.inactive`
+* Exchanges
+    - `exchange.rate.<name>` - Message rate per exchange
+* Queues
+    - `queue.total`
+    - `queue.idle` - Determined by message residence and flow
+    - `queue.messages.<name>` - Ready messages per queue
+    - `queue.consumers.<name>` - Consumers per queue
+    - `queue.memory.<name>` - Memory usage per queue
+* Bindings
+    - `binding.total` - Overall of AMQP bindings
+
+### Check
+
+### Prune
+
+
+## Install
+
+> TODO
 
 
 ## Configuration
