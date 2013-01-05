@@ -22,7 +22,7 @@
 ## Functionality
 
 gamekeeper has three modes of operation, each corresponding to a different
-subset of functionality.
+subset of functionality and accessible via the following subcommands:
 
 ### Measure
 
@@ -127,12 +127,20 @@ with dangling load-balancer connections through something like LVS or HAProxy.
 
 ## Install
 
-> TODO
+At present, it is assumed the user knows some of the Haskell eco system and
+in particular wrangling cabal-dev to obtain dependencies. I plan to offer pre-built binaries for x86_64 OSX and Linux in future.
+
+You will need reasonably new versions of GHC and the Haskell Platform which
+you can obtain [here](http://www.haskell.org/platform/), then run `make install` in the root directory to compile gamekeeper.
+
+There is also a Chef Cookbook which can be used to manage gamekeeper, if that's how you swing: https://github.com/brendanhay/gamekeeper-cookbook
 
 
 ## Configuration
 
-> TODO
+Command line flags are used to configure gamekeeper, you can access help for
+the top-level program and various subcommands via the `--help` switch.
+
 
 ### Available Flags
 
@@ -178,7 +186,8 @@ with dangling load-balancer connections through something like LVS or HAProxy.
 
 ## Running
 
-> TODO
+After a successful compile, the `./gamekeeper` symlink will be pointing to
+the built binary under `./dist`
 
 
 ## Contribute
