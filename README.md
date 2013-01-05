@@ -158,7 +158,7 @@ the top-level program and various subcommands via the `--help` switch.
   <tr>
     <td rowspan="3"><code>measure</code></td>
     <td><code>--uri</code></td>
-    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>guest@localhost:15672</code></td>
     <td><code>URI</code></td>
     <td>Address of the RabbitMQ API to poll</td>
   </tr>
@@ -187,7 +187,7 @@ the top-level program and various subcommands via the `--help` switch.
 
   <tr>
     <td><code>--uri</code></td>
-    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>guest@localhost:15672</code></td>
     <td><code>URI</code></td>
     <td>Address of the RabbitMQ API to poll</td>
   </tr>
@@ -216,7 +216,7 @@ the top-level program and various subcommands via the `--help` switch.
 
   <tr>
     <td><code>--uri</code></td>
-    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>guest@localhost:15672</code></td>
     <td><code>URI</code></td>
     <td>Address of the RabbitMQ API to poll</td>
   </tr>
@@ -238,7 +238,7 @@ the top-level program and various subcommands via the `--help` switch.
   <tr>
     <td rowspan="2"><code>prune connections</code></td>
     <td><code>--uri</code></td>
-    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>guest@localhost:15672</code></td>
     <td><code>URI</code></td>
     <td>Address of the RabbitMQ API to poll</td>
   </tr>
@@ -253,7 +253,7 @@ the top-level program and various subcommands via the `--help` switch.
   <tr>
     <td><code>prune queues</code></td>
     <td><code>--uri</code></td>
-    <td><code>http://guest:guest@localhost:15672</code></td>
+    <td><code>guest@localhost:15672</code></td>
     <td><code>URI</code></td>
     <td>Address of the RabbitMQ API to poll</td>
   </tr>
