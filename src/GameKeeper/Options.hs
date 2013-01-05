@@ -140,6 +140,15 @@ expandMode m@SubMode{..} | null modes = child
         , modeGroupModes = toGroup $ map expandMode modes
         }
 
+program :: SubMode
+program = subMode
+    { name  = programName
+    , def   = Help program
+    , help  = "Program help"
+    , flags = [flagVersion (\_ -> Version)]
+    , modes = [measure, prune, check]
+    }
+
 --
 -- Modes
 --
