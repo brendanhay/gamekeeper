@@ -177,7 +177,7 @@ the top-level program and various subcommands via the `--help` switch.
   </tr>
 
   <tr>
-    <td rowspan="3"><code>check node</code></td>
+    <td rowspan="4"><code>check node</code></td>
     <td><code>--name</code></td>
     <td></td>
     <td><code>STR</code></td>
@@ -206,7 +206,7 @@ the top-level program and various subcommands via the `--help` switch.
   </tr>
 
   <tr>
-    <td rowspan="3"><code>check queue</code></td>
+    <td rowspan="4"><code>check queue</code></td>
     <td><code>--name</code></td>
     <td></td>
     <td><code>STR</code></td>
