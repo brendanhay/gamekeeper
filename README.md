@@ -124,6 +124,7 @@ used to remove (via HTTP DELETE) idle connections and unused queues.
 This is primarily useful if you do not use AMQP heartbeats and have problems
 with dangling load-balancer connections through something like LVS or HAProxy.
 
+> These commands are destruction, please use caution!
 
 ## Install
 
