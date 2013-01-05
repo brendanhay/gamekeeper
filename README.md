@@ -32,8 +32,7 @@ The `measure` subcommand will emit a series of metrics from the specified
 All metrics are prefixed into sinks (Ganglia, Graphite, etc) with the
 identifier: `<node_name>.rabbit.`
 
-The `<node_name>` constant is currently determined by escaping the local
-hostname, and will be configurable in a future release.
+> The `<node_name>` constant is currently determined by escaping the local hostname, and will be configurable in a future release.
 
 **Overview**
 
@@ -74,6 +73,14 @@ hostname, and will be configurable in a future release.
 **Bindings**
 
 * `binding.total` - Overall number of AMQP bindings
+
+The output sink can be configured to emit to `Stdout,,`,
+`Ganglia,<host>,<port>`, or `Graphite,<host>,<port>` using the `--sink`
+argument. The underlying [network-metrics](http://github.com/brendanhay/network-metrics) also
+supports writing to `Statsd,<host>,<port>` but this is pointless, and not
+recommended due to the fact the RabbitMQ management plugin performs aggregation.
+
+> At time of writing [SoundCloud](http://www.soundcloud.com) emits to Ganglia, using gamekeeper
 
 ### Check
 
