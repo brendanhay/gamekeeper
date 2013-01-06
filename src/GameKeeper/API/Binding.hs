@@ -33,7 +33,7 @@ instance FromJSON Binding where
     parseJSON _          = empty
 
 instance Measurable [Binding] where
-    measure lst = [Gauge group "bindings" $ len lst]
+    measure lst = [Gauge group "binding.total" $ len lst]
 
 --
 -- API
