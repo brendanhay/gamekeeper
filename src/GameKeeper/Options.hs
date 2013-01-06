@@ -140,6 +140,15 @@ expandMode m@SubMode{..} | null modes = child
         , modeGroupModes = toGroup $ map expandMode modes
         }
 
+program :: SubMode
+program = subMode
+    { name  = programName
+    , def   = Help program
+    , help  = "Program help"
+    , flags = [flagVersion (\_ -> Version)]
+    , modes = [measure, prune, check]
+    }
+
 --
 -- Modes
 --
@@ -150,7 +159,7 @@ measure = subMode
     , def   = Measure uri oneMonth defaultSinkOpts
     , help  = "Measure and emit metrics to the specified sink"
     , flags = [ uriFlag
-              , daysFlag "Number of days before a connection is considered stale"
+              , daysFlag "Number of days before a connection is considered idle"
               , sinkFlag "Sink options describing the type and host/port combination"
               ]
     }
@@ -161,7 +170,7 @@ pruneConnections = subMode
     , def   = PruneConnections uri oneMonth
     , help  = "Perform idle connection pruning"
     , flags = [ uriFlag
-              , daysFlag "Number of days before a connection is considered stale"
+              , daysFlag "Number of days before a connection is considered idle"
               ]
     }
 
@@ -185,10 +194,10 @@ checkNode :: SubMode
 checkNode = subMode
     { name  = "node"
     , def   = CheckNode uri "" (messages thirtyMillion) (memory 8)
-    , help  = "Check a node's memory and message backlog"
+    , help  = "Check a node's memory and message residence"
     , flags = [ uriFlag
               , nameFlag "ATOM" "Erlang node name"
-              , messagesFlag "Message backlog thresholds"
+              , messagesFlag "Message residence thresholds"
               , memoryFlag "Memory usage thresholds (measurement: GB)"
               ]
     }
@@ -197,10 +206,10 @@ checkQueue :: SubMode
 checkQueue = subMode
     { name  = "queue"
     , def   = CheckQueue uri "" (messages quarterMillion) (memory 500)
-    , help  = "Check a queue's memory and message backlog"
+    , help  = "Check a queue's memory and message residence"
     , flags = [ uriFlag
               , nameFlag "STR" "AMQP Queue name"
-              , messagesFlag "Message backlog thresholds"
+              , messagesFlag "Message residence thresholds"
               , memoryFlag "Memory usage thresholds (measurement: MB)"
               ]
     }
@@ -238,7 +247,7 @@ verbosityFlags = flagsVerbosity f
 uriFlag :: Flag Options
 uriFlag = flagReq ["uri"] (\s o -> Right o { optUri = parseUri s }) "URI" help
   where
-    help = "URI of the RabbitMQ HTTP API (default: guest@localhost:55672)"
+    help = "URI of the RabbitMQ HTTP API (default: guest@localhost:15672)"
 
 nameFlag :: String -> String -> Flag Options
 nameFlag = flagReq ["name"] (\s o -> Right o { optName = BS.pack s })
