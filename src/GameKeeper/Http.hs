@@ -27,7 +27,7 @@ import Data.Data                   (Data, Typeable)
 import Data.Maybe                  (fromJust)
 import Data.Vector                 (Vector, toList)
 import Network.HTTP.Conduit hiding (queryString, path)
-import Network.HTTP.Types.Method
+import Network.HTTP.Types          (Method)
 import GameKeeper.Logger
 
 import qualified Data.ByteString.Char8 as BS
@@ -75,7 +75,7 @@ delete = request "DELETE"
 
 request :: Method -> Uri -> IO BL.ByteString
 request method uri = withManager $ \manager -> do
-        Response _ _ _ body <- httpLbs req { method = method } manager
+        body <- fmap responseBody (httpLbs req { method = method } manager)
         liftIO $ do
             debug ["[", show method, "] -> ", abspath uri]
             debug [ "["

@@ -222,15 +222,6 @@ check = subMode
     , modes = [checkNode, checkQueue]
     }
 
-program :: SubMode
-program = subMode
-    { name  = programName
-    , def   = Help program
-    , help  = "Program help"
-    , flags = [flagVersion (\_ -> Version)]
-    , modes = [measure, prune, check]
-    }
-
 --
 -- Flags
 --
