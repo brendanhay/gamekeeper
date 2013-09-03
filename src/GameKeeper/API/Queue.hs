@@ -28,7 +28,7 @@ import Control.Applicative ((<$>), (<*>), empty)
 import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
-import Data.Maybe          (fromJust)
+import Data.Maybe          (fromJust, fromMaybe)
 import Data.Vector         (Vector)
 import GameKeeper.Http
 import GameKeeper.Metric
