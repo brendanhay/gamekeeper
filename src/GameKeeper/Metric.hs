@@ -37,7 +37,7 @@ module GameKeeper.Metric (
 
 import Data.Data         (Data, Typeable)
 import Data.Word         (Word16)
-import Network.Socket
+import Network.Socket    ()
 import GameKeeper.Logger
 
 import qualified Data.ByteString.Char8      as BS
@@ -62,7 +62,7 @@ open host SinkOptions{..} = sink
   where
     sink | sinkType == M.Stdout = return . M.AnySink $ H.SinkHandle host logInfo
          | otherwise            = M.open sinkType host sinkHost port
-    port = PortNum sinkPort
+    port = fromIntegral sinkPort
 
 group :: M.Group
 group = "rabbit"
