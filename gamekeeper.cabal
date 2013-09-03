@@ -38,7 +38,6 @@ executable gamekeeper
   build-depends:    base >= 4 && < 5
                   , ghc-prim
                   , transformers
-                  , cryptocipher == 0.3.6
                   , http-conduit
                   , http-types
                   , network

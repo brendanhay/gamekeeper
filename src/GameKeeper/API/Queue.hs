@@ -28,7 +28,7 @@ import Control.Applicative ((<$>), (<*>), empty)
 import Control.Monad       (liftM)
 import Data.Aeson          (decode')
 import Data.Aeson.Types
-import Data.Maybe          (fromJust)
+import Data.Maybe          (fromJust, fromMaybe)
 import Data.Vector         (Vector)
 import GameKeeper.Http
 import GameKeeper.Metric
@@ -89,7 +89,8 @@ showQueue uri name = do
 
 listQueues :: Uri -> IO [Queue]
 listQueues uri =
-    filter (("amq.gen" `isPrefixOf`) . name) $ list uri "api/queues" query decode
+    filter (not . ("amq.gen" `BS.isPrefixOf`) . name) <$>
+      list uri "api/queues" query decode
   where
     decode b = decode' b :: Maybe (Vector Queue)
     query    = "?columns=name,vhost,messages,consumers,memory"
