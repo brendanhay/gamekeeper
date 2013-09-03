@@ -1,5 +1,5 @@
 name:               gamekeeper
-version:            0.3.0
+version:            0.3.1
 synopsis:           Management and monitoring tools for RabbitMQ
 description:        Retrieve statistics/metrics, perform operations tasks, and manage RabbitMQ via the HTTP API
 license:            OtherLicense
@@ -35,13 +35,13 @@ executable gamekeeper
   ghc-options:      -Wall -O2 -rtsopts -threaded
   ghc-prof-options: -prof -fprof-auto -auto-all -with-rtsopts=-p
 
-  build-depends:    base >= 4 && < 5
+  build-depends:    base            >= 4 && < 5
                   , ghc-prim
                   , transformers
                   , http-conduit
                   , http-types
                   , network
-                  , network-metrics
+                  , network-metrics >= 0.3.2
                   , utf8-string
                   , bytestring
                   , vector
@@ -51,4 +51,3 @@ executable gamekeeper
                   , old-locale
                   , split
                   , regex-compat
-
