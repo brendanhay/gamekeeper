@@ -40,12 +40,12 @@ executable gamekeeper
                   , transformers
                   , http-conduit
                   , http-types
-                  , network
+                  , network < 2.5.0.0
                   , network-metrics >= 0.3.2 && < 0.4
                   , utf8-string
                   , bytestring
                   , vector
-                  , aeson
+                  , aeson <= 0.6.2.1
                   , cmdargs
                   , time
                   , old-locale

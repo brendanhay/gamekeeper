@@ -90,7 +90,7 @@ request method uri = withManager $ \manager -> do
     kb bstr = (/ 1024) . fromIntegral $ BL.length bstr :: Float
     debug   = logDebug . concat
 
-prepare :: Uri -> Request m
+prepare :: Uri -> Request 
 prepare uri@Uri{..} = case parseUrl $ abspath uri of
     Just req -> applyBasicAuth uriUser uriPass req
     Nothing  -> error $ "Invalid Request: " ++ abspath uri
