@@ -227,7 +227,7 @@ check = subMode
 --
 
 appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
-appendDefaults m = helpFlag (Help m) : verbosityFlags
+appendDefaults m = (++ (helpFlag (Help m) : verbosityFlags))
 
 verbosityFlags :: [Flag Options]
 verbosityFlags = flagsVerbosity f
