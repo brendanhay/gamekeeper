@@ -1,46 +1,29 @@
-SHELL := /bin/bash
-CABAL := `which cabal-dev`
+SHELL := /usr/bin/env bash
 
-#
-# Build
-#
-
-.PHONY: install build install clean dist test conf prof
-
-all: build
+.PHONY: bench test
 
 build:
-	$(CABAL) build
+	cabal build $(addprefix -,$(findstring j,$(MAKEFLAGS)))
 
-install:
-	$(CABAL) install
+install: cabal.sandbox.config
+	cabal install -j \
+ --disable-documentation \
+ --only-dependencies
 
-clean:
-	$(CABAL) clean
-
-#
-# Configure
-#
-
-conf:
-	$(CABAL) configure
-	$(MAKE) build
+cabal.sandbox.config:
+	cabal sandbox init
 
 bench:
-	$(CABAL) configure --enable-benchmarks
-	$(MAKE) build
+	cabal install --enable-benchmarks && \
+ cabal bench --benchmark-option=-obenchmark.html
 
 test:
-	$(CABAL) configure --enable-tests
-	$(MAKE) build
+	cabal install --enable-tests && \
+ cabal test
 
-prof:
-	$(CABAL) configure --enable-executable-profiling
-	$(MAKE) build
+clean:
+	cabal clean
+	rm -rf cabal.sandbox.config .cabal-sandbox benchmark.html
 
-#
-# Interactive
-#
-
-ghci:
-	$(CABAL) ghci
+doc:
+	cabal haddock
