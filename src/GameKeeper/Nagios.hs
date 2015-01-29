@@ -24,7 +24,6 @@ module GameKeeper.Nagios (
     , check
     ) where
 
-import Prelude           hiding (catch)
 import Control.Exception
 import Data.List                (nub, intercalate)
 
