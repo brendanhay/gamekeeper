@@ -145,7 +145,7 @@ program = subMode
     { name  = programName
     , def   = Help program
     , help  = "Program help"
-    , flags = [flagVersion (\_ -> Version)]
+    , flags = [flagVersion (const Version)]
     , modes = [measure, prune, check]
     }
 
@@ -227,12 +227,12 @@ check = subMode
 --
 
 appendDefaults :: SubMode -> [Flag Options] -> [Flag Options]
-appendDefaults m = (++ ([helpFlag $ Help m] ++ verbosityFlags))
+appendDefaults m = helpFlag (Help m) : verbosityFlags
 
 verbosityFlags :: [Flag Options]
 verbosityFlags = flagsVerbosity f
   where
-    f v o = unsafePerformIO $ do setVerbosity v; return o
+    f v o = unsafePerformIO (setVerbosity v >> return o)
 {-# NOINLINE verbosityFlags #-}
 
 uriFlag :: Flag Options
@@ -244,7 +244,7 @@ nameFlag :: String -> String -> Flag Options
 nameFlag = flagReq ["name"] (\s o -> Right o { optName = BS.pack s })
 
 helpFlag :: a -> Flag a
-helpFlag m = flagNone ["help", "h"] (\_ -> m) "Display this help message"
+helpFlag m = flagNone ["help", "h"] (const m) "Display this help message"
 
 daysFlag :: String -> Flag Options
 daysFlag = flagReq ["days"] (\s o -> Right $ o { optDays = read s :: Int }) "INT"

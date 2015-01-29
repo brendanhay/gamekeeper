@@ -50,7 +50,7 @@ main = do
 
 mode :: Options -> IO ()
 mode Measure{..} = do
-    host <- getHostName >>= return . BS.pack . safe
+    host <- (BS.pack . safe) `liftM` getHostName
     sink <- open host optSink
     forkAll [ showOverview optUri >>= push sink
             , listConnections optUri >>= idleConnections optDays >>= push sink
@@ -129,6 +129,7 @@ mode _ = logError err >> error err
 
 children :: MVar [MVar ()]
 children = unsafePerformIO (newMVar [])
+{-# NOINLINE children #-}
 
 forkAll :: [IO ()] -> IO ()
 forkAll = mapM_ fork
